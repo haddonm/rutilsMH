@@ -1,0 +1,18 @@
+Package: rutilsMH
+Type: Package
+Title: Contains utility functions commonly used when writing R code
+Version: 0.1.0
+Date: 2019-05-05
+Author: <malcolm.hHaddon@gmail.com>
+Maintainer: <malcolm.hHaddon@gmail.com>
+Description: Contains utility functions commonly used when Writing R code.
+    Version 0.1.0 contains a collection of functions.
+Depends:
+    R (>= 3.0.0)
+Imports:
+    grDevices,
+    graphics,
+    utils
+License: GPL-2
+RoxygenNote: 6.1.1
+Encoding: UTF-8
