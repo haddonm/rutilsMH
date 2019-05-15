@@ -4,34 +4,24 @@
 \alias{plotprep}
 \title{plotprep: sets up a window and the par values for a single plot}
 \usage{
-plotprep(width = 6, height = 3.6, plots = c(1, 1), usefont = 7,
-  cex = 0.85, xmtext = TRUE, ymtext = TRUE, newdev = TRUE,
-  rows = TRUE, filename = "")
+plotprep(width = 6, height = 3.6, usefont = 7, cex = 0.85,
+  newdev = TRUE, filename = "")
 }
 \arguments{
 \item{width}{defaults to 6 inches = 15.24cm - width of plot}
 
 \item{height}{defaults to 3 inches = 7.62cm - height of plot}
 
-\item{plots}{defaults to c(1,1), but arranges multiple plots. If used it may
-be necessary to print out this code and adjust the mai and oma variables}
-
 \item{usefont}{default is 7 (bold Times); 1 = sans serif, 2 = sans serif bold}
 
 \item{cex}{default is 0.85, the size of font used for text within the plots}
 
-\item{xmtext}{default is TRUE; if plots is not c(1,1) this alters the mai and
-oma variables for the x-axis to allow for mtexting and avoid the x title}
-
-\item{ymtext}{default is TRUE; if plots is not c(1,1) this alters the mai and
-oma variables for the y-axis to allow for mtexting and avoid the y title}
-
 \item{newdev}{reuse a previously defined graphics device or make a new one;
 defaults to TRUE}
 
-\item{rows}{defaults to TRUE, determines whether to use mfrow or mfcol}
-
-\item{filename}{defaults to "" = do not save to a filename. If a filename is}
+\item{filename}{defaults to "" = do not save to a filename. If a
+filename is input the last three characters will be checked and if
+they are not png then .png will be added (at a resolution of 300)}
 }
 \value{
 Checks for and sets up a graphics device and sets the default plotting
@@ -49,8 +39,8 @@ plotprep: sets up a window and the par values for a single plot.
 }
 \examples{
 \dontrun{
-x <- rnorm(1000,mean=0,sd=1.0)
-plotprep()
-hist(x,breaks=30,main="",col=2)
+ x <- rnorm(1000,mean=0,sd=1.0)
+ plotprep()
+ hist(x,breaks=30,main="",col=2)
 }
 }

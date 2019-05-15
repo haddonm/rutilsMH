@@ -2,7 +2,7 @@
 % Please edit documentation in R/rutils.R
 \name{pkgfuns}
 \alias{pkgfuns}
-\title{pkgfuns outnames all functions within a package}
+\title{pkgfuns names all functions within a package}
 \usage{
 pkgfuns(packname)
 }
@@ -10,15 +10,17 @@ pkgfuns(packname)
 \item{packname}{the name of the package as character}
 }
 \value{
-a character vector containing the names of all functions in the named
-    package
+a character vector containing the names of all functions in the 
+    named package
 }
 \description{
-pgkfuns when given the name of a loaded library gives the names
-    of all functions within that library sorted in alphebetical order
+pgkfuns when given the name of a loaded library gives the 
+    names of all functions within that library sorted in alphebetical 
+    order.
 }
 \examples{
 \dontrun{
   pkgfuns("graphics")
+  pkgfuns("rutilsMH")
 }
 }

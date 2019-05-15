@@ -1,8 +1,8 @@
 
 
-#' mhutils: a set of functions to assist with code development
+#' rutilsMH: a set of functions to assist with code development
 #'
-#' The mhutils package provides an array of utility functions:
+#' The rutilsMH package provides an array of utility functions:
 #' these include documentation functions and summary functions
 #'
 #' @section Documentation functions:
@@ -37,11 +37,11 @@
 #'   \item{which.closest}{finds the closest value in a vector to a given number}
 #' }
 #' @docType package
-#' @name mhutils
+#' @name rutilsMH
 NULL
 
 #' @importFrom grDevices dev.cur dev.new dev.off png
-#' @importFrom graphics par
+#' @importFrom graphics par grid plot
 #' @importFrom utils tail
 #' @importFrom stats quantile loess sd 
 NULL
@@ -744,6 +744,36 @@ outfit <- function(inopt,backtransform=FALSE){
   }
 } # end of outfit
 
+#' @title parset alters the current base graphics par settings
+#'
+#' @description parset alters the current base graphics par settings
+#'     to suit a single standard plot. It is merely here to simplify
+#'     and speed the coding for exploratory base graphics. The font
+#'     and its size default to 0.85 and font 7 (Times bold). The
+#'     default values can be seen by typing parset with no brackets in
+#'     the console. If a different
+#'     set of par values are needed then the function parsyn() can be
+#'     used to act as a prompt for the correct syntax. The output to
+#'     the console can be copied to your script and modified to suit.
+#'
+#' @param plots vector of number of rows and columns, defaults to c(1,1)
+#' @param cex the size of the font used, defaults to 0.85
+#' @param font the font used, defaults to 7 which is Times Bold, 6 is
+#'     Times, 1 is Sans and 2 is Sans Bold.
+#'
+#' @return nothing but it changes teh base graphics par settings
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' parset()
+#' parsyn()
+#' }
+parset <- function(plots=c(1,1),cex=0.85,font=7) {
+  par(mfrow=plots,mai=c(0.45,0.45,0.05,0.05),oma=c(0.0,0,0.0,0.0))
+  par(cex=cex, mgp=c(1.35,0.35,0), font.axis=font,font=font,
+      font.lab=font)
+} # end of parset
 
 #' @title parsyn types the standard syntax for the par command to the console
 #'
@@ -762,20 +792,22 @@ parsyn <- function() {
   cat("par(cex=0.85, mgp=c(1.35,0.35,0), font.axis=7,font=7,font.lab=7)  \n")
 }
 
-#' @title pkgfuns outnames all functions within a package
+#' @title pkgfuns names all functions within a package
 #'
-#' @description pgkfuns when given the name of a loaded library gives the names
-#'     of all functions within that library sorted in alphebetical order
+#' @description pgkfuns when given the name of a loaded library gives the 
+#'     names of all functions within that library sorted in alphebetical 
+#'     order.
 #'
 #' @param packname the name of the package as character
 #'
-#' @return a character vector containing the names of all functions in the named
-#'     package
+#' @return a character vector containing the names of all functions in the 
+#'     named package
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #'   pkgfuns("graphics")
+#'   pkgfuns("rutilsMH")
 #' }
 pkgfuns <- function(packname) { # packname=pkgname
   funcs <- names(.getNamespace(packname))
@@ -785,6 +817,56 @@ pkgfuns <- function(packname) { # packname=pkgname
   funcs <- funcs[-pick]
   return(sort(funcs))
 } # end of pgkfuns
+
+#' @title plot1 a simple way to plot an xy line plot
+#'
+#' @description plot1 provides a quick way to plot out a single xy
+#'     line plot. It can be used with plotprep to generate a plot
+#'     outside of Rstudio or by itself to generate one within Rstudio.
+#'     It uses a standard par setup and permits custom labels, font,
+#'     and font size (cex). It checks the spread of y and if a ymax is
+#'     not given in the parameters finds the ymax and checks to see if
+#'     y goes negative in which case it uses getmin, so the
+#'     y-axis is set to 0 - ymax or ymin - ymax
+#'
+#' @param x The single vector of x data
+#' @param y the single vector of y data. If more are required they can
+#'     be added spearately after calling plot1.
+#' @param xlabel the label fot the x-axis, defaults to empty
+#' @param ylabel the label fot the y-axis, defaults to empty
+#' @param type the type of plot "l" is for line, the default, "p" is
+#'     points. If you want both plot a line and add points afterwards.
+#' @param usefont which font to use, defaults to 7 which is Times bold
+#' @param cex the size of the fonts used. defaults to 0.85
+#' @param maxy defaults to 0, which does nothing. If a value is given
+#'     then this value is used rather than estimating from the input y
+#' @param defpar if TRUE then plot1 will declare a par statement. If false it
+#'     will expect one outside the function. In this way plot1 can be
+#'     used when plotting multiple graphs, perhaps as mfrow=c(2,2)
+#' @param inpch the input character type if using type="p", default=16
+#' @param incol the colour to use for the line or points, default = black
+#'
+#' @return nothing but it does plot a graph and changes the par setting
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' x <- rnorm(20,mean=5,sd=1)
+#' plot1(x,x,xlabel="x-values",ylabel="yvalues")
+#' }
+plot1 <- function(x,y,xlabel="",ylabel="",type="l",usefont=7,cex=0.85,
+                  maxy=0,defpar=TRUE,inpch=16,incol=1){
+  if (defpar) {
+    par(mfrow = c(1,1), mai = c(0.45,0.45,0.1,0.05),oma = c(0,0,0,0))
+    par(cex = cex, mgp = c(1.35, 0.35, 0), font.axis = usefont,
+        font = usefont, font.lab = usefont)
+  }
+  if (maxy > 0) ymax <- maxy  else ymax <- getmax(y)
+  if (min(y,na.rm=TRUE) < 0.0) ymin <- getmin(y) else ymin <- 0.0
+  addline <- FALSE
+  plot(x,y,type=type,pch=inpch,lwd=2,col=incol,ylim=c(ymin,ymax),yaxs="i",
+       ylab=ylabel,xlab=xlabel,cex=cex,panel.first=grid())
+} # end of plot1
 
 #' @title plotprep: sets up a window and the par values for a single plot
 #'
@@ -796,33 +878,30 @@ pkgfuns <- function(packname) { # packname=pkgname
 #'   will generate a new active graphics device each time leaving the older ones
 #'   inactive but present. For quick exploratory plots this behaviour is not
 #'   wanted, hence the check if an active device exists already or not.
+#'
 #' @param width defaults to 6 inches = 15.24cm - width of plot
 #' @param height defaults to 3 inches = 7.62cm - height of plot
-#' @param plots defaults to c(1,1), but arranges multiple plots. If used it may
-#'    be necessary to print out this code and adjust the mai and oma variables
 #' @param usefont default is 7 (bold Times); 1 = sans serif, 2 = sans serif bold
 #' @param cex default is 0.85, the size of font used for text within the plots
-#' @param xmtext default is TRUE; if plots is not c(1,1) this alters the mai and
-#'    oma variables for the x-axis to allow for mtexting and avoid the x title
-#' @param ymtext default is TRUE; if plots is not c(1,1) this alters the mai and
-#'    oma variables for the y-axis to allow for mtexting and avoid the y title
 #' @param newdev reuse a previously defined graphics device or make a new one;
 #'    defaults to TRUE
-#' @param rows defaults to TRUE, determines whether to use mfrow or mfcol
-#' @param filename defaults to "" = do not save to a filename. If a filename is
+#' @param filename defaults to "" = do not save to a filename. If a
+#'     filename is input the last three characters will be checked and if
+#'     they are not png then .png will be added (at a resolution of 300)
+
 #' @return Checks for and sets up a graphics device and sets the default plotting
 #'   par values. This changes the current plotting options!
-#' @export plotprep
+#' @export
 #' @examples
 #' \dontrun{
-#' x <- rnorm(1000,mean=0,sd=1.0)
-#' plotprep()
-#' hist(x,breaks=30,main="",col=2)
+#'  x <- rnorm(1000,mean=0,sd=1.0)
+#'  plotprep()
+#'  hist(x,breaks=30,main="",col=2)
 #' }
-plotprep <- function(width=6,height=3.6,plots=c(1,1),usefont=7,cex=0.85,
-                     xmtext=TRUE,ymtext=TRUE,
-                     newdev=TRUE,rows=TRUE,filename="") {
-  if  ((names(dev.cur()) != "null device") & (newdev)) suppressWarnings(dev.off())
+plotprep <- function(width=6,height=3.6,usefont=7,cex=0.85,
+                     newdev=TRUE,filename="") {
+  if  ((names(dev.cur()) != "null device") &
+       (newdev)) suppressWarnings(dev.off())
   lenfile <- nchar(filename)
   if (lenfile > 3) {
     end <- substr(filename,(lenfile-3),lenfile)
@@ -832,30 +911,11 @@ plotprep <- function(width=6,height=3.6,plots=c(1,1),usefont=7,cex=0.85,
     if (names(dev.cur()) %in% c("null device","RStudioGD"))
       dev.new(width=width,height=height,noRStudioGD = TRUE)
   }
-  firstmai <- 0.45; secondmai <- 0.45; thirdmai <- 0.1
-  firstoma <- 0.0; secondoma <- 0.0; thirdoma <- 0.0
-  if (sum(plots) != 2) {
-    if (xmtext) {
-      firstmai <- 0.25
-      thirdmai <- 0.05
-      firstoma <- 1.0
-      thirdoma <- 0.1
-    }
-    if (ymtext) {
-      secondmai <- 0.25
-      secondoma <- 1.0
-    }
-  }
-  maival <- c(firstmai,secondmai,thirdmai,0.05)
-  omaval <- c(firstoma,secondoma,thirdoma,0.0)
-  if (rows) {
-    par(mfrow = plots,mai=maival,oma=omaval)
-  } else {
-    par(mfcol = plots,mai=maival,oma=omaval)
-  }
-  par(cex=cex, mgp=c(1.35,0.35,0), font.axis=usefont,font=usefont,font.lab=usefont)
+  par(mfrow=c(1,1),mai=c(0.45,0.45,0.05,0.05),oma=c(0.0,0.0,0.0,0.0))
+  par(cex=cex, mgp=c(1.35,0.35,0), font.axis=usefont,font=usefont,
+      font.lab=usefont)
   if (lenfile > 0) cat("\n Remember to place 'graphics.off()' after the plot \n")
-} # end of plot_prep
+} # end of plotprep
 
 #' @title printV returns a vector cbinded to 1:length(invect)
 #'
