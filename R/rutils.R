@@ -41,13 +41,10 @@
 NULL
 
 #' @importFrom grDevices dev.cur dev.new dev.off png
-#' @importFrom graphics par grid plot
+#' @importFrom graphics par grid plot axis mtext polygon title
 #' @importFrom utils tail
 #' @importFrom stats quantile loess sd 
 NULL
-
-
-
 
 #' @title classDF - tabluate the class of each column in a da
 #'
@@ -480,10 +477,12 @@ halftable <- function(inmat,yearcol="Year",subdiv=3) {
 #' @return a matrix of values and counts is returned invisibly
 #' @export inthist
 #' @examples
-#' x <- trunc(runif(1000)*10) + 1
-#' plotprep(width=6,height=4,plots=c(1,1))
-#' inthist(x,col="grey",border=3,width=0.75,xlabel="Random Uniform",
-#'         ylabel="Frequency")
+#' \dontrun{
+#'  x <- trunc(runif(1000)*10) + 1
+#'  plotprep(width=6,height=4)
+#'  inthist(x,col="grey",border=3,width=0.75,xlabel="Random Uniform",
+#'          ylabel="Frequency")
+#' }
 inthist <- function(x,col=1,border=NULL,width=1,xlabel="",ylabel="",
                     main="",lwd=1,xmin=NA,xmax=NA,ymax=NA,plotout=TRUE,
                     prop=FALSE,inc=1,xaxis=TRUE) {
