@@ -450,7 +450,104 @@ halftable <- function(inmat,yearcol="Year",subdiv=3) {
   return(outmat)
 } # end of halftable
 
-
+#' @title inthist - a replacement for the hist function for use with integers
+#'
+#' @description inthist - a replacement for the hist function for use with
+#'    integers because the ordinary function fails to count them correctly at
+#'    the end. The function is designed for integers and if it is given real
+#'    numbers it will issue a warning and then round all values before plotting.
+#' @param x - the vector of integers to be counted and plotted OR a matrix of
+#'     values in column 1 and counts in column 2
+#' @param col - the colour of the fill; defaults to black = 1, set this to 0
+#'    for an empty bar, but then give a value for border
+#' @param border - the colour of the outline of each bar defaults to col
+#' @param width - denotes the width of each bar; defaults to 1, should be >0
+#'    and <= 1
+#' @param xlabel - the label for the x axis; defaults to ""
+#' @param ylabel - the label for the y axis; defaults to ""
+#' @param main - the title for the individual plot; defaults to ""
+#' @param lwd - the line width of the border; defaults to 1
+#' @param xmin - sets the lower bound for x-axis; used to match plots
+#' @param xmax - sets the upper bound for x axis; used with multiple plots
+#' @param ymax - enables external control of the maximum y value; mainly of
+#'    use when plotting multiple plots together.
+#' @param plotout - plot the histogram or not? Defaults to TRUE
+#' @param prop - plot the proportions rather than the counts
+#' @param inc - sets the xaxis increment; used to customize the axis;
+#'    defaults to 1.
+#' @param xaxis - set to FALSE to define the xaxis outside of inthist;
+#'    defaults to TRUE
+#' @return a matrix of values and counts is returned invisibly
+#' @export inthist
+#' @examples
+#' x <- trunc(runif(1000)*10) + 1
+#' plotprep(width=6,height=4,plots=c(1,1))
+#' inthist(x,col="grey",border=3,width=0.75,xlabel="Random Uniform",
+#'         ylabel="Frequency")
+inthist <- function(x,col=1,border=NULL,width=1,xlabel="",ylabel="",
+                    main="",lwd=1,xmin=NA,xmax=NA,ymax=NA,plotout=TRUE,
+                    prop=FALSE,inc=1,xaxis=TRUE) {
+  if (class(x) == "matrix") {
+    counts <- x[,2]
+    values <- x[,1]
+  } else {
+    counts <- table(x)
+    if (length(counts) == 0) stop("No data provided \n\n")
+    values <- as.numeric(names(counts))
+  }
+  
+  if (sum(!(abs(values - round(values)) < .Machine$double.eps^0.5)) > 0) {
+    warning("Attempting to use 'inthist' with non-integers; Values now rounded \n")
+    values <- round(values,0)
+  }
+  if ((width <= 0) | (width > 1)) {
+    warning("width values should be >0 and <= 1")
+    width <- 1
+  }
+  counts <- as.numeric(counts)
+  nct <- length(counts)
+  propor <- counts/sum(counts,na.rm=TRUE)
+  if (is.na(xmin)) xmin <- min(values)
+  if (is.na(xmax)) xmax <- max(values)
+  if (prop) {
+    outplot <- propor
+  } else {
+    outplot <- counts
+  }
+  if (is.na(ymax)) {
+    if (nchar(main) > 0) {
+      ymax <- max(outplot) * 1.15
+    } else {
+      ymax <- max(outplot) * 1.05
+    }
+  }
+  if (plotout) {
+    plot(values,outplot,type="n",
+         xlim=c((xmin-(width*0.75)),(xmax+(width*0.75))),
+         xaxs="r",ylim=c(0,ymax),yaxs="i",xlab="",ylab="",xaxt="n")
+    if (xaxis) axis(side=1,at=seq(xmin,xmax,inc),labels=seq(xmin,xmax,inc))
+    if (length(counts) > 0) {
+      for (i in 1:nct) {  # i <- 1
+        x1 <- values[i] - (width/2)
+        x2 <- values[i] + (width/2)
+        x <- c(x1,x1,x2,x2,x1)
+        y <- c(0,outplot[i],outplot[i],0,0)
+        if (is.null(border)) border <- col
+        polygon(x,y,col=col,border=border,lwd=lwd)
+      }
+      title(ylab=list(ylabel, cex=1.0, font=7),
+            xlab=list(xlabel, cex=1.0, font=7))
+      if (nchar(main) > 0) mtext(main,side=3,line=-1.0,outer=FALSE,cex=0.9)
+    }
+  } # end of if-plotout
+  if (length(counts) > 0) {
+    answer <- cbind(values,counts,propor);
+    rownames(answer) <- values
+    colnames(answer) <- c("values","counts","proportion")
+  } else { answer <- NA  }
+  class(answer) <- "inthist"
+  return(invisible(answer))
+}  # end of inthist
 
 #' @title listExamples lists all the examples in a package R file
 #'
