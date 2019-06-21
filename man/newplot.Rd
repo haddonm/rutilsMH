@@ -11,23 +11,24 @@ newplot(width = 6, height = 3.6, newdev = TRUE)
 
 \item{height}{defaults to 3.6 inches = 9.144cm - height of plot}
 
-\item{newdev}{reuse a previously defined graphics device or make a new one;
-defaults to TRUE}
+\item{newdev}{reuse a previously defined graphics device or make a new 
+one, defaults to TRUE}
 }
 \value{
-Checks for and sets up a graphics device and sets the default plotting
-  par values. This changes the current plotting options!
+Checks for and sets up a graphics device and sets the default 
+    plotting par values. This changes the current plotting options!
 }
 \description{
 newplot is a bare-bones setup routine to generate a plot in
     RStudio using a floating window. If you want to alter the default par
     settings then you can use either setplot() to get suitable syntax or,
-    more simply, use parsyn() which only give a template for the par syntax
+    more simply, use parsyn() which only gives a template for the par 
+    syntax
 }
 \examples{
 \dontrun{
-x <- rnorm(1000,mean=0,sd=1.0)
-plotprep()
-hist(x,breaks=30,main="",col=2)
+ x <- rnorm(1000,mean=0,sd=1.0)
+ plotprep()
+ hist(x,breaks=30,main="",col=2)
 }
 }

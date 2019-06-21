@@ -13,7 +13,7 @@ countzeros(invect)
 A single value of zero or the number of zeros
 }
 \description{
-countzeros used in apply to count the number of zeros in a vector
+countzeros used in apply to count zeros in a vector
 }
 \examples{
 \dontrun{

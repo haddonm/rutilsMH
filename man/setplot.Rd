@@ -2,13 +2,13 @@
 % Please edit documentation in R/rutils.R
 \name{setplot}
 \alias{setplot}
-\title{setplot : provides an example plot with defaults for a standard plot}
+\title{setplot provides an example plot with defaults for a standard plot}
 \usage{
 setplot()
 }
 \value{
-prints lines of R that will define a standard plot and can be copied
-  into an R script.
+prints lines of R that will define a standard plot and can be 
+    copied into an R script.
 }
 \description{
 Provides an example plot with defaults for a standard plot

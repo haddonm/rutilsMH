@@ -2,7 +2,7 @@
 % Please edit documentation in R/rutils.R
 \name{parsyn}
 \alias{parsyn}
-\title{parsyn types the standard syntax for the par command to the console}
+\title{parsyn types standard syntax for the par command to the console}
 \usage{
 parsyn()
 }
@@ -11,7 +11,7 @@ it writes two lines of R code to the console
 }
 \description{
 parsyn types the standard syntax for the par command to the
-    console so it can be copied and pasted into your own code and modified.
+    console so it can be copied and pasted into your own code.
 }
 \examples{
 \dontrun{

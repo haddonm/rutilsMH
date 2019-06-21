@@ -15,11 +15,11 @@ getmin(x, mult = 1.05)
 a suitable lower bound for a plot if required
 }
 \description{
-getmin generates a lower bound for a plot where it is unknown
-    whether the minumum is less than zero of not. If less than 0 then
-    multiplying by the default mult of 1.05 works well but if the outcome if
-    > 0 then the multiplier needs to be adjusted appropriately so the minimum
-    is slightly lower than the minimum of the data
+getmin generates lower bound for a plot where it is unknown
+    whether the minimum is less than zero of not. If less than 0 then
+    multiplying by the default mult of 1.05 works well but if the outcome
+    if > 0 then the multiplier needs to be adjusted appropriately so 
+    the minimum is slightly lower than the minimum of the data
 }
 \examples{
 \dontrun{

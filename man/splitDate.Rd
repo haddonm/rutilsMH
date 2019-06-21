@@ -11,7 +11,7 @@ splitDate(dat = NA)
 defaults to NA, whereupon the current time is used.}
 }
 \value{
-a vector od characters relating to 'Year', 'Month', 'Day', 'Time',
+a vector od characters relating to 'Year', 'Month', 'Day','Time',
     and a DateTime, which is a combination of all of these suitable for
     inclusion in a filename.
 }

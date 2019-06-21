@@ -17,7 +17,7 @@ classDF - tabluate the class of each column in a dataframe.
 }
 \examples{
 \dontrun{
-data(ChickWeight)
-classDF(ChickWeight)
+ data(ChickWeight)
+ classDF(ChickWeight)
 }
 }

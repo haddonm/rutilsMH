@@ -27,8 +27,8 @@ points. If you want both plot a line and add points afterwards.}
 \item{maxy}{defaults to 0, which does nothing. If a value is given
 then this value is used rather than estimating from the input y}
 
-\item{defpar}{if TRUE then plot1 will declare a par statement. If false it
-will expect one outside the function. In this way plot1 can be
+\item{defpar}{if TRUE then plot1 will declare a par statement. If false 
+it will expect one outside the function. In this way plot1 can be
 used when plotting multiple graphs, perhaps as mfrow=c(2,2)}
 
 \item{inpch}{the input character type if using type="p", default=16}

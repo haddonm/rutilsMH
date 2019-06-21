@@ -7,22 +7,22 @@
 facttonum(invect)
 }
 \arguments{
-\item{invect}{the vector of numeric factors to be converted back to numbers}
+\item{invect}{vector of numeric factors to be converted back to numbers}
 }
 \value{
 an output vector of numbers instead of the input factors
 }
 \description{
 facttonum converts a vector of numeric factors into numbers.
-    If the factors are not numeric then the outcome will be a series of NA.
-    It is up to you to apply this function only to numeric factors. A warning
-    will be thrown if the resulting output vector contains NAs
+    If the factors are not numeric then the outcome will be a series of 
+    NA. It is up to you to apply this function only to numeric factors. 
+    A warning will be thrown if the resulting output vector contains NAs
 }
 \examples{
 \dontrun{
  DepCat <- as.factor(rep(seq(100,600,100),2)); DepCat
  5 * DepCat[3]
- as.numeric(levels(DepCat))  # #only converts the levels not the replicates
+ as.numeric(levels(DepCat))  # #only converts levels not the replicates
  DepCat <- facttonum(DepCat)
  5 * DepCat[3]
  x <- factor(letters)

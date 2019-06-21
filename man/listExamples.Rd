@@ -15,8 +15,8 @@ Creates an R file in the working directory and prints its name to
 }
 \description{
 listExamples lists all the examples in a package R file. It
-    comments out the ifrst line number and any dontrun statements along with
-    their following curly bracket.
+    comments out the first line number and any dontrun statements along 
+    with their following curly bracket.
 }
 \examples{
 \dontrun{

@@ -13,7 +13,7 @@ countones(invect)
 A single value of zero or the number of ones
 }
 \description{
-countones used in apply to count the number of ones in a vector
+countones used in apply to count number of ones in a vector
 }
 \examples{
 \dontrun{

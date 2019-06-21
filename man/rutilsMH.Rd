@@ -16,6 +16,7 @@ these include documentation functions and summary functions
   \item{classDF}{Tabulates the class of each column in a dataframe}
   \item{getname}{returns the name of a variable as character}
   \item{listFunctions}{lists all functions in a given R file}
+  \item{properties}{characterizes properties of data.frame columns}
 }
 }
 
@@ -29,7 +30,7 @@ these include documentation functions and summary functions
 \section{Plotting function}{
 
 \describe{
-  \item{newplot}{bare-bones plotprep, opens a new device using default par}
+  \item{newplot}{bare-bones plotprep, opens a new device + default par}
   \item{parsyn}{prints par command syntax to the console to be copied}
   \item{plotprep}{sets up a plotting device external to Rstudio}
   \item{setplot}{writes a base graphics template to the console}
@@ -44,11 +45,11 @@ these include documentation functions and summary functions
   \item{countNAs}{count the numbr of NA values in a vector}
   \item{countones}{count the number of values = 1 in a vector}
   \item{countzeros}{count the number of values = 0 in a vector}
-  \item{lininterpol}{linearly interpolates values in a vector containing NAs}
+  \item{lininterpol}{linearly replaces NA values in a vector}
   \item{greplow}{a case ignoring 'grep'}
   \item{printV}{prints a vector as a column with index numbers}
   \item{quants}{used in apply to estimate quantiles across a vector}
-  \item{which.closest}{finds the closest value in a vector to a given number}
+  \item{which.closest}{finds closest value in a vector to a given number}
 }
 }
 

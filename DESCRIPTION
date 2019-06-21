@@ -1,13 +1,13 @@
 Package: rutilsMH
 Type: Package
 Title: Contains utility functions commonly used when writing R code
-Version: 0.1.0
-Date: 2019-05-05
+Version: 0.1.1
+Date: 2019-06-21
 Author: <malcolm.hHaddon@gmail.com>
 Maintainer: <malcolm.hHaddon@gmail.com>
 Description: Contains utility functions commonly used when Writing R code.
     Version 0.1.0 contains a collection of functions, see ?rutilsMH for
-    details and examples of thier use.
+    details and examples of their use.
 Depends:
     R (>= 3.0.0)
 License: GPL-2

@@ -2,7 +2,7 @@
 % Please edit documentation in R/rutils.R
 \name{countgtzero}
 \alias{countgtzero}
-\title{countgtzero used in apply to count the number of zeros in a vector}
+\title{countgtzero used in apply to count the number >0 in a vector}
 \usage{
 countgtzero(invect)
 }
@@ -10,10 +10,10 @@ countgtzero(invect)
 \item{invect}{vector of values}
 }
 \value{
-A single value of zero or the number of zeros
+A single value of number of values > 0
 }
 \description{
-countgtzero used in apply to count the number of zeros in a vector
+countgtzero used in apply to count number >0 in a vector
 }
 \examples{
 \dontrun{

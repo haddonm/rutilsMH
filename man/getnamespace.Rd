@@ -11,8 +11,8 @@ getnamespace(fun)
 character, which can be obtained using 'getname'}
 }
 \value{
-the name of the loaded NameSpace or package within which a function
-    can be found.
+the name of the loaded NameSpace or package within which a 
+    function can be found.
 }
 \description{
 getnamespace searches the loaded NameSpaces and returns the

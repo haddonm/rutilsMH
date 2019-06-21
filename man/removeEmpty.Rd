@@ -7,7 +7,7 @@
 removeEmpty(invect)
 }
 \arguments{
-\item{invect}{a vector of input strings, possibly containing empty strings}
+\item{invect}{vector of input strings, possibly containing empty strings}
 }
 \value{
 a possibly NULL vector of strings

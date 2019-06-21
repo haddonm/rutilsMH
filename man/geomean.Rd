@@ -2,7 +2,7 @@
 % Please edit documentation in R/rutils.R
 \name{geomean}
 \alias{geomean}
-\title{geomean: the geometric mean of a vector corrected for log-normal bias}
+\title{geomean log-normal bias corrected geometric mean of a vector}
 \usage{
 geomean(invect)
 }
@@ -13,12 +13,12 @@ geomean(invect)
 The bias-corrected geometric mean of the vector
 }
 \description{
-Calculate the geometric mean of a vector corrected for log-normal
-  bias. NAs and zeros are removed from consideration.
+Calculates log-normal bias corrected geometric mean of a 
+    vector. NAs and zeros are removed from consideration.
 }
 \examples{
 \dontrun{
-x <- c(1,2,3,4,5,6,7,8,9)
-geomean(x)
+ x <- c(1,2,3,4,5,6,7,8,9)
+ geomean(x)
 }
 }

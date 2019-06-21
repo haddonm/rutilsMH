@@ -10,23 +10,22 @@ lininterpol(invect)
 \item{invect}{- the vector of values including missing values}
 }
 \value{
-a vector identical to invect but with the NAs replaced with linearly
-   interpolated values.
-#@importFrom (utils, tail)
+invect but with NAs replaced with linearly interpolated values.
 }
 \description{
-lininterpol - linearly interpolate values in a vector with NAs. A common
-   problem when plotting up time series is where there are missing values or NAs the
-   plotted line will have gaps, one can always plot points on top of a line to
-   identify where there are missing values but an alternative would be to interpolate
-   the missing values linearly and plot that line as a dashed line. This function
-   generates those linear interpolations. The input vector cannot have missing values
-   at the beginning or the end. If there are no missing values the original vector
-   is returned
+lininterpol - linearly interpolate values in a vector with 
+    NAs. A common problem when plotting up time series is where there are
+    missing values or NAs the plotted line will have gaps, one can always
+    plot points on top of a line to identify where there are missing 
+    values but an alternative would be to interpolate the missing values 
+    linearly and plot that line as a dashed line. This function generates
+    those linear interpolations. The input vector cannot have missing 
+    values at the beginning or the end. If there are no missing values 
+    the original vector is returned
 }
 \examples{
 \dontrun{
-Exp <- c(20102,18465,16826,15333,14355,NA,13843.7,NA,NA,NA,15180)
-lininterpol(Exp)
+ Expt <- c(20102,18465,16826,15333,14355,NA,13843.7,NA,NA,NA,15180)
+ lininterpol(Expt)
 }
 }
