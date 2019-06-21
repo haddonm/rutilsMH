@@ -11,7 +11,7 @@ printV(invect, label = c("index", "value"))
 numbers, characters, or logical. If logical the TRUE and FALSE are
 converted to 1's and 0's}
 
-\item{label}{the column labels for the vector, default is 'index' and 'value'}
+\item{label}{the column labels for vector, default is index and value}
 }
 \value{
 a dataframe containing the vector 1:length(invect), and invect.
@@ -19,9 +19,9 @@ a dataframe containing the vector 1:length(invect), and invect.
 \description{
 printV takes an input vector and generates another vector of
     numbers 1:length(invect) which it cbinds to itself. This is primarily
-    useful when trying to print out a vector which can be clumsy to read when
-    print across the screen. applying printV leads to a single vector being
-    printed down the screen
+    useful when trying to print out a vector which can be clumsy to read 
+    when print across the screen. applying printV leads to a single 
+    vector being printed down the screen
 }
 \examples{
 \dontrun{

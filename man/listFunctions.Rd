@@ -9,8 +9,8 @@ listFunctions(infile, console = TRUE)
 \arguments{
 \item{infile}{- a character variable containing the filename for parsing}
 
-\item{console}{logical determining whether to print directly to the screen
-the default = TRUE}
+\item{console}{logical determining whether to print directly to the 
+screen the default = TRUE}
 }
 \value{
 Generates text listing all functions but also outputs invisibly
@@ -24,7 +24,7 @@ listFunctions: Lists all the functions in the R infile
 txt <- vector("character",5)
 txt[1] <- "But an ordinary line of text should be ignored - 1"
 txt[2] <- "The term function on its own should be ignored"
-txt[3] <- "Also any line with the phrase: '<- function', should be detected"
+txt[3] <- "Also any line with phrase: '<- function', should be detected"
 txt[4] <- "But an ordinary line of text should be ignored - 2"
 txt[5] <- "But an ordinary line of text should be ignored - 3"
 infile <- textConnection(txt)

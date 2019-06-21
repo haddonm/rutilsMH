@@ -22,11 +22,12 @@ a data.frame with the rows being each variable from the input
 }
 \description{
 properties - used to check a data.frame before
-    standardization
+    standardization. The maximum and minimum are constrained to four
+    decimal places.
 }
 \examples{
 \dontrun{
-data(abdat)
-properties(abdat$fish)
+ data(abdat)
+ properties(abdat$fish)
 }
 }

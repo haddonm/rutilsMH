@@ -11,11 +11,12 @@ which.closest(x, invect, index = T)
 
 \item{invect}{the vector in which to lookup the value x}
 
-\item{index}{should the closest value be returned or its index; default=TRUE}
+\item{index}{should the closest value be returned or its index; 
+default=TRUE}
 }
 \value{
-by default it returns the index in the vector of the value closest to
-    the input  value
+by default it returns the index in the vector of the value 
+    closest to the input value
 }
 \description{
 which.closest finds either the number in a vector which is

@@ -19,8 +19,8 @@ a data.frame half the height and double the width of the original
 }
 \description{
 halftable would be used when printing a table using kable
-    from knitr where one of the columns was Year. The objective would be to
-    split the table in half taking the bottom half and attaching it on
+    from knitr where one of the columns was Year. The objective would be 
+    to split the table in half taking the bottom half and attaching it on
     the right hand side of the top half. The year column would act as the
     index.
 }

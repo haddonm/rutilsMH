@@ -11,6 +11,7 @@
 #'   \item{classDF}{Tabulates the class of each column in a dataframe}
 #'   \item{getname}{returns the name of a variable as character}
 #'   \item{listFunctions}{lists all functions in a given R file}
+#'   \item{properties}{characterizes properties of data.frame columns}
 #' }
 #' @section Summary functions:
 #' \describe{
@@ -18,7 +19,7 @@
 #' }
 #' @section Plotting function:
 #' \describe{
-#'   \item{newplot}{bare-bones plotprep, opens a new device using default par}
+#'   \item{newplot}{bare-bones plotprep, opens a new device + default par}
 #'   \item{parsyn}{prints par command syntax to the console to be copied}
 #'   \item{plotprep}{sets up a plotting device external to Rstudio}
 #'   \item{setplot}{writes a base graphics template to the console}
@@ -30,11 +31,11 @@
 #'   \item{countNAs}{count the numbr of NA values in a vector}
 #'   \item{countones}{count the number of values = 1 in a vector}
 #'   \item{countzeros}{count the number of values = 0 in a vector}
-#'   \item{lininterpol}{linearly interpolates values in a vector containing NAs}
+#'   \item{lininterpol}{linearly replaces NA values in a vector}
 #'   \item{greplow}{a case ignoring 'grep'}
 #'   \item{printV}{prints a vector as a column with index numbers}
 #'   \item{quants}{used in apply to estimate quantiles across a vector}
-#'   \item{which.closest}{finds the closest value in a vector to a given number}
+#'   \item{which.closest}{finds closest value in a vector to a given number}
 #' }
 #' @docType package
 #' @name rutilsMH
@@ -55,8 +56,8 @@ NULL
 #' @export classDF
 #' @examples
 #' \dontrun{
-#' data(ChickWeight)
-#' classDF(ChickWeight)
+#'  data(ChickWeight)
+#'  classDF(ChickWeight)
 #' }
 classDF <- function(dataframe) {
   nvar <- dim(dataframe)[2]
@@ -65,7 +66,7 @@ classDF <- function(dataframe) {
 
 #' @title countones used in apply to count the number of ones in a vector
 #'
-#' @description countones used in apply to count the number of ones in a vector
+#' @description countones used in apply to count number of ones in a vector
 #' @param invect vector of values
 #' @return A single value of zero or the number of ones
 #' @export countones
@@ -83,7 +84,7 @@ countones <- function(invect) {
 
 #' @title countzeros used in apply to count the number of zeros in a vector
 #'
-#' @description countzeros used in apply to count the number of zeros in a vector
+#' @description countzeros used in apply to count zeros in a vector
 #' @param invect vector of values
 #' @return A single value of zero or the number of zeros
 #' @export countzeros
@@ -99,11 +100,11 @@ countzeros <- function(invect) {
   return(length(pick))
 }
 
-#' @title countgtzero used in apply to count the number of zeros in a vector
+#' @title countgtzero used in apply to count the number >0 in a vector
 #'
-#' @description countgtzero used in apply to count the number of zeros in a vector
+#' @description countgtzero used in apply to count number >0 in a vector
 #' @param invect vector of values
-#' @return A single value of zero or the number of zeros
+#' @return A single value of number of values > 0
 #' @export countgtzero
 #' @examples
 #' \dontrun{
@@ -119,7 +120,7 @@ countgtzero <- function(invect) {
 
 #' @title countNAs used in apply to count the number of NAs in a vector
 #'
-#' @description countNAs used in apply to count the number of NAs in a vector
+#' @description countNAs used in apply to count number of NAs in a vector
 #' @param invect vector of values
 #' @return A single value of zero or the number of NAs
 #' @export countNAs
@@ -156,11 +157,11 @@ countgtOne <- function(invect) {
 #' @title facttonum converts a vector of numeric factors into numbers
 #'
 #' @description facttonum converts a vector of numeric factors into numbers.
-#'     If the factors are not numeric then the outcome will be a series of NA.
-#'     It is up to you to apply this function only to numeric factors. A warning
-#'     will be thrown if the resulting output vector contains NAs
+#'     If the factors are not numeric then the outcome will be a series of 
+#'     NA. It is up to you to apply this function only to numeric factors. 
+#'     A warning will be thrown if the resulting output vector contains NAs
 #'
-#' @param invect the vector of numeric factors to be converted back to numbers
+#' @param invect vector of numeric factors to be converted back to numbers
 #'
 #' @return an output vector of numbers instead of the input factors
 #' @export
@@ -169,7 +170,7 @@ countgtOne <- function(invect) {
 #' \dontrun{
 #'  DepCat <- as.factor(rep(seq(100,600,100),2)); DepCat
 #'  5 * DepCat[3]
-#'  as.numeric(levels(DepCat))  # #only converts the levels not the replicates
+#'  as.numeric(levels(DepCat))  # #only converts levels not the replicates
 #'  DepCat <- facttonum(DepCat)
 #'  5 * DepCat[3]
 #'  x <- factor(letters)
@@ -181,7 +182,7 @@ facttonum <- function(invect){
   }
   if (class(invect) == "numeric") outvect <- invect
   if (any(is.na(outvect)))
-    warning("NAs produced, your input vector may have non-numbers present \n")
+    warning("NAs produced, input vector may have non-numbers present \n")
   return(outvect)
 } # end of facttonum
 
@@ -225,17 +226,17 @@ freqMean <- function(values,infreqs) {
   return(ans)
 } # end of freqMean
 
-#' @title geomean: the geometric mean of a vector corrected for log-normal bias
+#' @title geomean log-normal bias corrected geometric mean of a vector
 #'
-#' @description Calculate the geometric mean of a vector corrected for log-normal
-#'   bias. NAs and zeros are removed from consideration.
+#' @description Calculates log-normal bias corrected geometric mean of a 
+#'     vector. NAs and zeros are removed from consideration.
 #' @param invect is a vector of numbers in linear space.
 #' @return The bias-corrected geometric mean of the vector
 #' @export geomean
 #' @examples
 #' \dontrun{
-#' x <- c(1,2,3,4,5,6,7,8,9)
-#' geomean(x)
+#'  x <- c(1,2,3,4,5,6,7,8,9)
+#'  geomean(x)
 #' }
 geomean <- function(invect) {
   pick <- which((invect <= 0.0))
@@ -250,14 +251,13 @@ geomean <- function(invect) {
   return(gmean)
 }  # end of geomean
 
-
 #' @title getmin generates the lower bound for a plot
 #'
-#' @description getmin generates a lower bound for a plot where it is unknown
-#'     whether the minumum is less than zero of not. If less than 0 then
-#'     multiplying by the default mult of 1.05 works well but if the outcome if
-#'     > 0 then the multiplier needs to be adjusted appropriately so the minimum
-#'     is slightly lower than the minimum of the data
+#' @description getmin generates lower bound for a plot where it is unknown
+#'     whether the minimum is less than zero of not. If less than 0 then
+#'     multiplying by the default mult of 1.05 works well but if the outcome
+#'     if > 0 then the multiplier needs to be adjusted appropriately so 
+#'     the minimum is slightly lower than the minimum of the data
 #'
 #' @param x the vector of data to be tested for its minimum
 #' @param mult the multiplier for both ends, defaults to 1.05 (=0.95 if >0)
@@ -283,11 +283,11 @@ getmin <- function(x,mult=1.05) {
 
 #' @title getmax generates the upper bound for a plot
 #'
-#' @description getmax generates an upper bound for a plot where it is unknown
+#' @description getmax generates upper bound for a plot where it is unknown
 #'     whether the maximum is greater than zero of not. If > 0 then
-#'     multiplying by the default mult of 1.05 works well but if the outcome if
-#'     < 0 then the multiplier needs to be adjusted appropriately so the maximum
-#'     is slightly higher than the maximum of the data
+#'     multiplying by the default mult of 1.05 works well but if the outcome
+#'     if < 0 then the multiplier needs to be adjusted appropriately so the 
+#'     maximum is slightly higher than the maximum of the data
 #'
 #' @param x the vector of data to be tested for its maximum
 #' @param mult the multiplier for both ends, defaults to 1.05 (=0.95 if < 0)
@@ -297,12 +297,12 @@ getmin <- function(x,mult=1.05) {
 #'
 #' @examples
 #' \dontrun{
-#' vect <- rnorm(10,mean=0,sd=2)
-#' sort(vect,decreasing=TRUE)
-#' getmax(vect,mult=1.0)
-#' vect <- rnorm(10,mean = -5,sd = 1.5)
-#' sort(vect,decreasing=TRUE)
-#' getmax(vect,mult=1.0)
+#'  vect <- rnorm(10,mean=0,sd=2)
+#'  sort(vect,decreasing=TRUE)
+#'  getmax(vect,mult=1.0)
+#'  vect <- rnorm(10,mean = -5,sd = 1.5)
+#'  sort(vect,decreasing=TRUE)
+#'  getmax(vect,mult=1.0)
 #' }
 getmax <- function(x,mult=1.05) {
   ymax <- max(x,na.rm=TRUE)
@@ -343,8 +343,8 @@ getname <- function(x) {
 #' @param fun the name of the function of interest. It must be of class
 #'     character, which can be obtained using 'getname'
 #'
-#' @return the name of the loaded NameSpace or package within which a function
-#'     can be found.
+#' @return the name of the loaded NameSpace or package within which a 
+#'     function can be found.
 #' @export
 #'
 #' @examples
@@ -361,15 +361,15 @@ getnamespace <- function(fun) {
 
 #' @title greplow - uses tolower in the search for the pattern
 #'
-#' @description greplow - a grep implementation that ignores the case of either
-#'    the search pattern or the object to be search. Both are converted to lower
-#'    case before using grep.
+#' @description greplow a grep implementation that ignores the case of 
+#'     either the search pattern or the object to be search. Both are 
+#'     converted to lower case before using grep.
 #' @param pattern - the text to search for in x
 #' @param x - the vector or object within which to search for 'pattern' once
 #'    both have been converted to lowercase.
 #'
-#' @return the index location within x of 'pattern', if it is present, an empty
-#'    integer if not
+#' @return the index location within x of 'pattern', if it is present, 
+#'     an empty integer if not
 #' @export greplow
 #'
 #' @examples
@@ -387,8 +387,8 @@ greplow <- function(pattern,x) {
 #' @title halftable halves the height of a tall narrow data.frame
 #'
 #' @description halftable would be used when printing a table using kable
-#'     from knitr where one of the columns was Year. The objective would be to
-#'     split the table in half taking the bottom half and attaching it on
+#'     from knitr where one of the columns was Year. The objective would be 
+#'     to split the table in half taking the bottom half and attaching it on
 #'     the right hand side of the top half. The year column would act as the
 #'     index.
 #'
@@ -447,32 +447,33 @@ halftable <- function(inmat,yearcol="Year",subdiv=3) {
   return(outmat)
 } # end of halftable
 
-#' @title inthist - a replacement for the hist function for use with integers
+#' @title inthist a replacement for the hist function for use with integers
 #'
 #' @description inthist - a replacement for the hist function for use with
-#'    integers because the ordinary function fails to count them correctly at
-#'    the end. The function is designed for integers and if it is given real
-#'    numbers it will issue a warning and then round all values before plotting.
-#' @param x - the vector of integers to be counted and plotted OR a matrix of
+#'     integers because the ordinary function fails to count them correctly 
+#'     at the end. The function is designed for integers and if it is given 
+#'     real numbers it will issue a warning and then round all values before 
+#'     plotting.
+#' @param x the vector of integers to be counted and plotted OR a matrix of
 #'     values in column 1 and counts in column 2
-#' @param col - the colour of the fill; defaults to black = 1, set this to 0
+#' @param col the colour of the fill; defaults to black = 1, set this to 0
 #'    for an empty bar, but then give a value for border
-#' @param border - the colour of the outline of each bar defaults to col
-#' @param width - denotes the width of each bar; defaults to 1, should be >0
+#' @param border the colour of the outline of each bar defaults to col
+#' @param width denotes the width of each bar; defaults to 1, should be >0
 #'    and <= 1
-#' @param xlabel - the label for the x axis; defaults to ""
-#' @param ylabel - the label for the y axis; defaults to ""
-#' @param main - the title for the individual plot; defaults to ""
-#' @param lwd - the line width of the border; defaults to 1
-#' @param xmin - sets the lower bound for x-axis; used to match plots
-#' @param xmax - sets the upper bound for x axis; used with multiple plots
-#' @param ymax - enables external control of the maximum y value; mainly of
+#' @param xlabel the label for the x axis; defaults to ""
+#' @param ylabel the label for the y axis; defaults to ""
+#' @param main the title for the individual plot; defaults to ""
+#' @param lwd the line width of the border; defaults to 1
+#' @param xmin sets the lower bound for x-axis; used to match plots
+#' @param xmax sets the upper bound for x axis; used with multiple plots
+#' @param ymax enables external control of the maximum y value; mainly of
 #'    use when plotting multiple plots together.
-#' @param plotout - plot the histogram or not? Defaults to TRUE
-#' @param prop - plot the proportions rather than the counts
-#' @param inc - sets the xaxis increment; used to customize the axis;
+#' @param plotout plot the histogram or not? Defaults to TRUE
+#' @param prop plot the proportions rather than the counts
+#' @param inc sets the xaxis increment; used to customize the axis;
 #'    defaults to 1.
-#' @param xaxis - set to FALSE to define the xaxis outside of inthist;
+#' @param xaxis set to FALSE to define the xaxis outside of inthist;
 #'    defaults to TRUE
 #' @return a matrix of values and counts is returned invisibly
 #' @export inthist
@@ -496,7 +497,7 @@ inthist <- function(x,col=1,border=NULL,width=1,xlabel="",ylabel="",
   }
   
   if (sum(!(abs(values - round(values)) < .Machine$double.eps^0.5)) > 0) {
-    warning("Attempting to use 'inthist' with non-integers; Values now rounded \n")
+    warning("Using 'inthist' with non-integers; Values now rounded \n")
     values <- round(values,0)
   }
   if ((width <= 0) | (width > 1)) {
@@ -551,8 +552,8 @@ inthist <- function(x,col=1,border=NULL,width=1,xlabel="",ylabel="",
 #' @title listExamples lists all the examples in a package R file
 #'
 #' @description listExamples lists all the examples in a package R file. It
-#'     comments out the ifrst line number and any dontrun statements along with
-#'     their following curly bracket.
+#'     comments out the first line number and any dontrun statements along 
+#'     with their following curly bracket.
 #'
 #' @param infile - a character variable containing the path and filename
 #' @return Creates an R file in the working directory and prints its name to
@@ -569,7 +570,7 @@ inthist <- function(x,col=1,border=NULL,width=1,xlabel="",ylabel="",
 #' infile <- textConnection(txt)
 #' listExamples(infile)
 #' }
-listExamples <- function(infile) {  # infile="C:/Users/had06a/Dropbox/rcode/simpleSA/R/catchcurve.R"
+listExamples <- function(infile) {  
   outfile <- paste0("examples_",tail(unlist(strsplit(infile,"/")),1))
   cat("All the example code from  \n",file=outfile,append=FALSE)
   cat(infile,"\n\n",file=outfile,append=TRUE)
@@ -603,28 +604,27 @@ listExamples <- function(infile) {  # infile="C:/Users/had06a/Dropbox/rcode/simp
 
 #' @title lininterpol - linearly interpolate values in a vector with NAs
 #'
-#' @description lininterpol - linearly interpolate values in a vector with NAs. A common
-#'    problem when plotting up time series is where there are missing values or NAs the
-#'    plotted line will have gaps, one can always plot points on top of a line to
-#'    identify where there are missing values but an alternative would be to interpolate
-#'    the missing values linearly and plot that line as a dashed line. This function
-#'    generates those linear interpolations. The input vector cannot have missing values
-#'    at the beginning or the end. If there are no missing values the original vector
-#'    is returned
+#' @description lininterpol - linearly interpolate values in a vector with 
+#'     NAs. A common problem when plotting up time series is where there are
+#'     missing values or NAs the plotted line will have gaps, one can always
+#'     plot points on top of a line to identify where there are missing 
+#'     values but an alternative would be to interpolate the missing values 
+#'     linearly and plot that line as a dashed line. This function generates
+#'     those linear interpolations. The input vector cannot have missing 
+#'     values at the beginning or the end. If there are no missing values 
+#'     the original vector is returned
 #'
 #' @param invect - the vector of values including missing values
 #'
-#' @return a vector identical to invect but with the NAs replaced with linearly
-#'    interpolated values.
-#' #@importFrom (utils, tail)
-#' @export lininterpol
+#' @return invect but with NAs replaced with linearly interpolated values.
+#' @export
 #'
 #' @examples
 #' \dontrun{
-#' Exp <- c(20102,18465,16826,15333,14355,NA,13843.7,NA,NA,NA,15180)
-#' lininterpol(Exp)
+#'  Expt <- c(20102,18465,16826,15333,14355,NA,13843.7,NA,NA,NA,15180)
+#'  lininterpol(Expt)
 #' }
-lininterpol <- function(invect) {  # invect <- fissp[,"FIS"]
+lininterpol <- function(invect) { 
   npt <- length(invect)
   answer <- invect
   pickNA <- which(is.na(invect))
@@ -662,8 +662,8 @@ lininterpol <- function(invect) {  # invect <- fissp[,"FIS"]
 #'
 #' @description listFunctions: Lists all the functions in the R infile
 #' @param infile - a character variable containing the filename for parsing
-#' @param console logical determining whether to print directly to the screen
-#'     the default = TRUE
+#' @param console logical determining whether to print directly to the 
+#'     screen the default = TRUE
 #' @return Generates text listing all functions but also outputs invisibly
 #'     a list of the functions and syntax, and separately the function names
 #'
@@ -673,7 +673,7 @@ lininterpol <- function(invect) {  # invect <- fissp[,"FIS"]
 #' txt <- vector("character",5)
 #' txt[1] <- "But an ordinary line of text should be ignored - 1"
 #' txt[2] <- "The term function on its own should be ignored"
-#' txt[3] <- "Also any line with the phrase: '<- function', should be detected"
+#' txt[3] <- "Also any line with phrase: '<- function', should be detected"
 #' txt[4] <- "But an ordinary line of text should be ignored - 2"
 #' txt[5] <- "But an ordinary line of text should be ignored - 3"
 #' infile <- textConnection(txt)
@@ -746,22 +746,24 @@ magnitude <- function(x) {
 #' @description newplot is a bare-bones setup routine to generate a plot in
 #'     RStudio using a floating window. If you want to alter the default par
 #'     settings then you can use either setplot() to get suitable syntax or,
-#'     more simply, use parsyn() which only give a template for the par syntax
+#'     more simply, use parsyn() which only gives a template for the par 
+#'     syntax
 #' @param width defaults to 6 inches = 15.24cm - width of plot
 #' @param height defaults to 3.6 inches = 9.144cm - height of plot
-#' @param newdev reuse a previously defined graphics device or make a new one;
-#'    defaults to TRUE
-#' @return Checks for and sets up a graphics device and sets the default plotting
-#'   par values. This changes the current plotting options!
+#' @param newdev reuse a previously defined graphics device or make a new 
+#'     one, defaults to TRUE
+#' @return Checks for and sets up a graphics device and sets the default 
+#'     plotting par values. This changes the current plotting options!
 #' @export
 #' @examples
 #' \dontrun{
-#' x <- rnorm(1000,mean=0,sd=1.0)
-#' plotprep()
-#' hist(x,breaks=30,main="",col=2)
+#'  x <- rnorm(1000,mean=0,sd=1.0)
+#'  plotprep()
+#'  hist(x,breaks=30,main="",col=2)
 #' }
 newplot <- function(width=6,height=3.6,newdev=TRUE) {
-  if  ((names(dev.cur()) != "null device") & (newdev)) suppressWarnings(dev.off())
+  if  ((names(dev.cur()) != "null device") & (newdev)) 
+    suppressWarnings(dev.off())
   if (names(dev.cur()) %in% c("null device","RStudioGD"))
     dev.new(width=width,height=height,noRStudioGD = TRUE)
   par(mfrow=c(1,1),mai=c(0.45,0.45,0.05,0.05),oma=c(0.0,0,0.0,0.0))
@@ -871,10 +873,10 @@ parset <- function(plots=c(1,1),cex=0.85,font=7) {
       font.lab=font)
 } # end of parset
 
-#' @title parsyn types the standard syntax for the par command to the console
+#' @title parsyn types standard syntax for the par command to the console
 #'
 #' @description parsyn types the standard syntax for the par command to the
-#'     console so it can be copied and pasted into your own code and modified.
+#'     console so it can be copied and pasted into your own code.
 #'
 #' @return it writes two lines of R code to the console
 #' @export
@@ -936,8 +938,8 @@ pkgfuns <- function(packname) { # packname=pkgname
 #' @param cex the size of the fonts used. defaults to 0.85
 #' @param maxy defaults to 0, which does nothing. If a value is given
 #'     then this value is used rather than estimating from the input y
-#' @param defpar if TRUE then plot1 will declare a par statement. If false it
-#'     will expect one outside the function. In this way plot1 can be
+#' @param defpar if TRUE then plot1 will declare a par statement. If false 
+#'     it will expect one outside the function. In this way plot1 can be
 #'     used when plotting multiple graphs, perhaps as mfrow=c(2,2)
 #' @param inpch the input character type if using type="p", default=16
 #' @param incol the colour to use for the line or points, default = black
@@ -966,27 +968,28 @@ plot1 <- function(x,y,xlabel="",ylabel="",type="l",usefont=7,cex=0.85,
 
 #' @title plotprep: sets up a window and the par values for a single plot
 #'
-#' @description plotprep: sets up a window and the par values for a single plot.
-#'   it checks to see if a graphics device is open and opens a new one if not.
-#'   This is simply a utility function to save typing the standard syntax.
-#'   Some of the defaults can be changed. Typing the name without () will
-#'   provide a template for modification. If 'windows' is called repeatedly this
-#'   will generate a new active graphics device each time leaving the older ones
-#'   inactive but present. For quick exploratory plots this behaviour is not
-#'   wanted, hence the check if an active device exists already or not.
+#' @description plotprep sets up a window and the par values for a single 
+#'     plot. It checks to see if a graphics device is open and opens a new 
+#'     one if not. This is simply a utility function to save typing the 
+#'     standard syntax. Some of the defaults can be changed. Typing the name
+#'     without () will provide a template for modification. If 'windows' is 
+#'     called repeatedly this will generate a new active graphics device 
+#'     each time leaving the older ones inactive but present. For quick 
+#'     exploratory plots this behaviour is not wanted, hence the check if 
+#'     an active device exists already or not.
 #'
 #' @param width defaults to 6 inches = 15.24cm - width of plot
 #' @param height defaults to 3 inches = 7.62cm - height of plot
-#' @param usefont default is 7 (bold Times); 1 = sans serif, 2 = sans serif bold
-#' @param cex default is 0.85, the size of font used for text within the plots
-#' @param newdev reuse a previously defined graphics device or make a new one;
-#'    defaults to TRUE
+#' @param usefont default is 7 (bold Times) 1 sans serif, 2 sans serif bold
+#' @param cex default is 0.85, the font size font used for text in the plots
+#' @param newdev reuse a previously defined graphics device or make new one;
+#'     defaults to TRUE
 #' @param filename defaults to "" = do not save to a filename. If a
 #'     filename is input the last three characters will be checked and if
 #'     they are not png then .png will be added (at a resolution of 300)
 
-#' @return Checks for and sets up a graphics device and sets the default plotting
-#'   par values. This changes the current plotting options!
+#' @return Checks for and sets up a graphics device and sets the default 
+#'     plotting par values. This changes the current plotting options!
 #' @export
 #' @examples
 #' \dontrun{
@@ -1010,21 +1013,22 @@ plotprep <- function(width=6,height=3.6,usefont=7,cex=0.85,
   par(mfrow=c(1,1),mai=c(0.45,0.45,0.05,0.05),oma=c(0.0,0.0,0.0,0.0))
   par(cex=cex, mgp=c(1.35,0.35,0), font.axis=usefont,font=usefont,
       font.lab=usefont)
-  if (lenfile > 0) cat("\n Remember to place 'graphics.off()' after the plot \n")
+  if (lenfile > 0) 
+    cat("\n Remember to place 'graphics.off()' after the plot \n")
 } # end of plotprep
 
 #' @title printV returns a vector cbinded to 1:length(invect)
 #'
 #' @description printV takes an input vector and generates another vector of
 #'     numbers 1:length(invect) which it cbinds to itself. This is primarily
-#'     useful when trying to print out a vector which can be clumsy to read when
-#'     print across the screen. applying printV leads to a single vector being
-#'     printed down the screen
+#'     useful when trying to print out a vector which can be clumsy to read 
+#'     when print across the screen. applying printV leads to a single 
+#'     vector being printed down the screen
 #'
 #' @param invect the input vector to be more easily visualized, this can be
 #'     numbers, characters, or logical. If logical the TRUE and FALSE are
 #'     converted to 1's and 0's
-#' @param label the column labels for the vector, default is 'index' and 'value'
+#' @param label the column labels for vector, default is index and value
 #'
 #' @return a dataframe containing the vector 1:length(invect), and invect.
 #' @export
@@ -1048,7 +1052,8 @@ printV <- function(invect,label=c("index","value")) {
 #' @title properties - used to check a data.frame before standardization
 #'
 #' @description properties - used to check a data.frame before
-#'     standardization
+#'     standardization. The maximum and minimum are constrained to four
+#'     decimal places.
 #' @param indat the data.frame containing the data fields to be used
 #'     in the subsequent standardization. It tabulates the number of
 #'     NAs and the number of unique values for each variable and finds
@@ -1061,8 +1066,8 @@ printV <- function(invect,label=c("index","value")) {
 #' @export properties
 #' @examples
 #' \dontrun{
-#' data(abdat)
-#' properties(abdat$fish)
+#'  data(abdat)
+#'  properties(abdat$fish)
 #' }
 properties <- function(indat,dimout=FALSE) {
   if(dimout) print(dim(indat))
@@ -1076,8 +1081,8 @@ properties <- function(indat,dimout=FALSE) {
   minimum[pick] <- sapply(indat[,pick],min,na.rm=TRUE)
   maximum[pick] <- sapply(indat[,pick],max,na.rm=TRUE)
   index <- 1:length(isna)
-  props <- as.data.frame(cbind(index,isna,uniques,clas,minimum,
-                               maximum,t(indat[1,])))
+  props <- as.data.frame(cbind(index,isna,uniques,clas,round(minimum,4),
+                               round(maximum,4),t(indat[1,])))
   colnames(props) <- c("Index","isNA","Unique","Class","Min",
                        "Max","Example")
   return(props)
@@ -1111,7 +1116,7 @@ quants <- function(invect,probs = c(0.025,0.05,0.5,0.95,0.975)) {
 #'     also removes strings made up only of spaces and removes spaces from
 #'     inside of inidivdual chunks of text.
 #'
-#' @param invect a vector of input strings, possibly containing empty strings
+#' @param invect vector of input strings, possibly containing empty strings
 #'
 #' @return a possibly NULL vector of strings
 #' @export
@@ -1130,14 +1135,14 @@ removeEmpty <- function(invect) {
   return(tmp)
 }
 
-#' @title setplot : provides an example plot with defaults for a standard plot
+#' @title setplot provides an example plot with defaults for a standard plot
 #'
 #' @description Provides an example plot with defaults for a standard plot
 #'   includes details of how to gnerate tiff, pdf, and png versions,
 #'   mtext and legends. Currently no parameters, but the function
 #'   is open to development for customization of the example plot.
-#' @return prints lines of R that will define a standard plot and can be copied
-#'   into an R script.
+#' @return prints lines of R that will define a standard plot and can be 
+#'     copied into an R script.
 #' @export setplot
 #' @examples
 #' \dontrun{
@@ -1148,18 +1153,22 @@ setplot <- function() {
   cat('#    dev.new(width=width,height=height,noRStudioGD = TRUE) \n')
   cat('#graphfile <- "name.tiff" OR "name.pdf" OR name.png  \n')
   cat('#if (file.exists(graphfile)) file.remove(graphfile)  \n')
-  cat('#tiff(file=graphfile,width=150,height=150,units="mm",res=300,compression=c("lzw")) OR  \n')
+  cat('#tiff(file=graphfile,width=150,height=150,units="mm",res=300,
+      compression=c("lzw")) OR  \n')
   cat('#pdf(file=graphfile,onefile=T,width=8,height=6,family="Times") OR \n')
-  cat('#png(filename=graphfile,width=150,height=100,units="mm",res=300,family="Times") \n')
+  cat('#png(filename=graphfile,width=150,height=100,units="mm",res=300,
+      family="Times") \n')
   cat('\n')
   cat('par(mfrow=c(1,1),mai=c(0.45,0.45,0.05,0.05),oma=c(0.0,0,0.0,0.0)) \n')
   cat('par(cex=0.85, mgp=c(1.35,0.35,0), font.axis=7,font=7,font.lab=7) \n')
   cat('ymax <- max(y,na.rm=T) * 1.05 \n')
-  cat('plot(x,y,type="l",xlab="",ylab="",col=1,ylim=c(0,ymax),yaxs="i",lwd=2) \n')
+  cat('plot(x,y,type="l",xlab="",ylab="",col=1,ylim=c(0,ymax),yaxs="i",
+      lwd=2) \n')
   cat('title(ylab=list("ylabel", cex=1.0, font=7),  \n')
   cat('      xlab=list("xlabel", cex=1.0, font=7)) \n')
   cat('\n')
-  cat('legend(0,0.45,c("True Mean","Precise","Imprecise"),col=c(4,1,2),lwd=3,bty="n",cex=1.0) \n')
+  cat('legend(0,0.45,c("True Mean","Precise","Imprecise"),col=c(4,1,2),
+      lwd=3,bty="n",cex=1.0) \n')
   cat('mtext("label",side=2,outer=T,line=0.0,font=7,cex=1.0) \n')
   cat('\n')
   cat('#dev.off() \n')
@@ -1175,7 +1184,7 @@ setplot <- function() {
 #'     keeping different run outputs seperate and identifiable.
 #' @param dat - a system time from Sys.time() to be broken in components;
 #'     defaults to NA, whereupon the current time is used.
-#' @return a vector od characters relating to 'Year', 'Month', 'Day', 'Time',
+#' @return a vector od characters relating to 'Year', 'Month', 'Day','Time',
 #'     and a DateTime, which is a combination of all of these suitable for
 #'     inclusion in a filename.
 #' @export splitDate
@@ -1209,10 +1218,11 @@ splitDate <- function(dat=NA) {
 #'
 #' @param x the value to lookup
 #' @param invect the vector in which to lookup the value x
-#' @param index should the closest value be returned or its index; default=TRUE
+#' @param index should the closest value be returned or its index; 
+#'     default=TRUE
 #'
-#' @return by default it returns the index in the vector of the value closest to
-#'     the input  value
+#' @return by default it returns the index in the vector of the value 
+#'     closest to the input value
 #' @export
 #'
 #' @examples

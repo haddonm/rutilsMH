@@ -13,13 +13,13 @@ greplow(pattern, x)
 both have been converted to lowercase.}
 }
 \value{
-the index location within x of 'pattern', if it is present, an empty
-   integer if not
+the index location within x of 'pattern', if it is present, 
+    an empty integer if not
 }
 \description{
-greplow - a grep implementation that ignores the case of either
-   the search pattern or the object to be search. Both are converted to lower
-   case before using grep.
+greplow a grep implementation that ignores the case of 
+    either the search pattern or the object to be search. Both are 
+    converted to lower case before using grep.
 }
 \examples{
 \dontrun{

@@ -12,11 +12,11 @@ plotprep(width = 6, height = 3.6, usefont = 7, cex = 0.85,
 
 \item{height}{defaults to 3 inches = 7.62cm - height of plot}
 
-\item{usefont}{default is 7 (bold Times); 1 = sans serif, 2 = sans serif bold}
+\item{usefont}{default is 7 (bold Times) 1 sans serif, 2 sans serif bold}
 
-\item{cex}{default is 0.85, the size of font used for text within the plots}
+\item{cex}{default is 0.85, the font size font used for text in the plots}
 
-\item{newdev}{reuse a previously defined graphics device or make a new one;
+\item{newdev}{reuse a previously defined graphics device or make new one;
 defaults to TRUE}
 
 \item{filename}{defaults to "" = do not save to a filename. If a
@@ -24,18 +24,19 @@ filename is input the last three characters will be checked and if
 they are not png then .png will be added (at a resolution of 300)}
 }
 \value{
-Checks for and sets up a graphics device and sets the default plotting
-  par values. This changes the current plotting options!
+Checks for and sets up a graphics device and sets the default 
+    plotting par values. This changes the current plotting options!
 }
 \description{
-plotprep: sets up a window and the par values for a single plot.
-  it checks to see if a graphics device is open and opens a new one if not.
-  This is simply a utility function to save typing the standard syntax.
-  Some of the defaults can be changed. Typing the name without () will
-  provide a template for modification. If 'windows' is called repeatedly this
-  will generate a new active graphics device each time leaving the older ones
-  inactive but present. For quick exploratory plots this behaviour is not
-  wanted, hence the check if an active device exists already or not.
+plotprep sets up a window and the par values for a single 
+    plot. It checks to see if a graphics device is open and opens a new 
+    one if not. This is simply a utility function to save typing the 
+    standard syntax. Some of the defaults can be changed. Typing the name
+    without () will provide a template for modification. If 'windows' is 
+    called repeatedly this will generate a new active graphics device 
+    each time leaving the older ones inactive but present. For quick 
+    exploratory plots this behaviour is not wanted, hence the check if 
+    an active device exists already or not.
 }
 \examples{
 \dontrun{
