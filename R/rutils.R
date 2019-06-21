@@ -936,7 +936,7 @@ pkgfuns <- function(packname) { # packname=pkgname
 #'     points. If you want both plot a line and add points afterwards.
 #' @param usefont which font to use, defaults to 7 which is Times bold
 #' @param cex the size of the fonts used. defaults to 0.85
-#' @param maxy defaults to 0, which does nothing. If a value is given
+#' @param limity defaults to c(0,0), which does nothing. If a value is given
 #'     then this value is used rather than estimating from the input y
 #' @param defpar if TRUE then plot1 will declare a par statement. If false 
 #'     it will expect one outside the function. In this way plot1 can be
@@ -953,16 +953,16 @@ pkgfuns <- function(packname) { # packname=pkgname
 #' plot1(x,x,xlabel="x-values",ylabel="yvalues")
 #' }
 plot1 <- function(x,y,xlabel="",ylabel="",type="l",usefont=7,cex=0.85,
-                  maxy=0,defpar=TRUE,inpch=16,incol=1){
+                  limity=c(0,0),defpar=TRUE,inpch=16,incol=1){
   if (defpar) {
     par(mfrow = c(1,1), mai = c(0.45,0.45,0.1,0.05),oma = c(0,0,0,0))
     par(cex = cex, mgp = c(1.35, 0.35, 0), font.axis = usefont,
         font = usefont, font.lab = usefont)
   }
-  if (maxy > 0) ymax <- maxy  else ymax <- getmax(y)
-  if (min(y,na.rm=TRUE) < 0.0) ymin <- getmin(y) else ymin <- 0.0
+  if (limity[2] > 0) limit = limity  else limit = c(0,getmax(y))
+  if (min(y,na.rm=TRUE) < 0.0) limit[1] <- getmin(y)
   addline <- FALSE
-  plot(x,y,type=type,pch=inpch,lwd=2,col=incol,ylim=c(ymin,ymax),yaxs="i",
+  plot(x,y,type=type,pch=inpch,lwd=2,col=incol,ylim=limit,yaxs="i",
        ylab=ylabel,xlab=xlabel,cex=cex,panel.first=grid())
 } # end of plot1
 

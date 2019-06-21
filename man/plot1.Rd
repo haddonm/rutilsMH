@@ -5,7 +5,8 @@
 \title{plot1 a simple way to plot an xy line plot}
 \usage{
 plot1(x, y, xlabel = "", ylabel = "", type = "l", usefont = 7,
-  cex = 0.85, maxy = 0, defpar = TRUE, inpch = 16, incol = 1)
+  cex = 0.85, limity = c(0, 0), defpar = TRUE, inpch = 16,
+  incol = 1)
 }
 \arguments{
 \item{x}{The single vector of x data}
@@ -24,7 +25,7 @@ points. If you want both plot a line and add points afterwards.}
 
 \item{cex}{the size of the fonts used. defaults to 0.85}
 
-\item{maxy}{defaults to 0, which does nothing. If a value is given
+\item{limity}{defaults to c(0,0), which does nothing. If a value is given
 then this value is used rather than estimating from the input y}
 
 \item{defpar}{if TRUE then plot1 will declare a par statement. If false 
