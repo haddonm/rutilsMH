@@ -473,6 +473,20 @@ halftable <- function(inmat,yearcol="Year",subdiv=3) {
   return(outmat)
 } # end of halftable
 
+
+info <- function(invar) {
+  cat("Class: ",class(invar),"\n")
+  str(invar)
+  cat("\n")
+  categories <-  c("matrix","array","data.frame")
+  if (class(invar) %in% categories) {
+    cat("Dimension: ",dim(invar),"\n")
+    print(head(invar,2))
+  } else {
+    cat("Length: ",length(invar),"\n")
+  }
+} # end of info
+
 #' @title inthist a replacement for the hist function for use with integers
 #'
 #' @description inthist - a replacement for the hist function for use with
@@ -766,6 +780,31 @@ listFunctions <- function(infile,console=TRUE) { # infile=filename
 magnitude <- function(x) {
   return(10^(floor(log10(abs(x)))))
 }
+
+#' @title makeUnit generates a unit matrix whose diagonal can be changed
+#' 
+#' @description makeUnit generates a unit matrix but includes the facility
+#'     to alter the diagonal value away from 1.0 if desired.
+#'
+#' @param N the order of the matrix
+#' @param diagvalue defaults to 1.0, but otherwise can be a different 
+#'     constant or a vector of dimension N
+#'
+#' @return a square matrix defaulting to a unit matrix
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   makeUnit(4)
+#'   surv <- exp(-0.2)
+#'   makeUnit(4,surv)
+#' }
+makeUnit <- function(N,diagvalue=1.0) {
+  N <-trunc(N)
+  UnitM <- matrix(0,nrow=N,ncol=N,dimnames=list(1:N,1:N))
+  diag(UnitM) <- diagvalue
+  return(UnitM)
+}  # end of makeUnit
 
 #' @title newplot simple floating window setup a plot
 #'
