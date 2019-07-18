@@ -527,6 +527,8 @@ info <- function(invar) {
 inthist <- function(x,col=1,border=NULL,width=1,xlabel="",ylabel="",
                     main="",lwd=1,xmin=NA,xmax=NA,ymax=NA,plotout=TRUE,
                     prop=FALSE,inc=1,xaxis=TRUE) {
+  # x=dat; col=1;border=NULL;width=1;xlabel="";ylabel="";
+ # main="";lwd=1;xmin=NA;xmax=NA;ymax=NA;plotout=TRUE;prop=FALSE;inc=1;xaxis=TRUE
   if (class(x) == "matrix") {
     counts <- x[,2]
     values <- x[,1]
@@ -547,8 +549,8 @@ inthist <- function(x,col=1,border=NULL,width=1,xlabel="",ylabel="",
   counts <- as.numeric(counts)
   nct <- length(counts)
   propor <- counts/sum(counts,na.rm=TRUE)
-  if (is.na(xmin)) xmin <- min(values)
-  if (is.na(xmax)) xmax <- max(values)
+  if (is.na(xmin)) xmin <- min(values,na.rm=TRUE)
+  if (is.na(xmax)) xmax <- max(values,na.rm=TRUE)
   if (prop) {
     outplot <- propor
   } else {
@@ -556,9 +558,9 @@ inthist <- function(x,col=1,border=NULL,width=1,xlabel="",ylabel="",
   }
   if (is.na(ymax)) {
     if (nchar(main) > 0) {
-      ymax <- max(outplot) * 1.15
+      ymax <- max(outplot,na.rm=TRUE) * 1.15
     } else {
-      ymax <- max(outplot) * 1.05
+      ymax <- max(outplot,na.rm=TRUE) * 1.05
     }
   }
   if (plotout) {
