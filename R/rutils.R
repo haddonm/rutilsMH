@@ -1084,6 +1084,51 @@ plotprep <- function(width=6,height=3.6,usefont=7,cex=0.85,
     cat("\n Remember to place 'graphics.off()' after the plot \n")
 } # end of plotprep
 
+#' @title plotxyy plots two vectors of numbers against single x-axis
+#' 
+#' @description plotxyy plots two plots on the single graph so that
+#'     they share the x-axis. The first series is plotted on the left
+#'     vertical axis and the second on the right-hand axis.
+#'
+#' @param x the x values
+#' @param y1 the left-hand axis values
+#' @param y2 the right-hand axis values
+#' @param xlab the x label, default=""
+#' @param ylab1 the left-hand y label, default=""
+#' @param ylab2 the right-hand y label, default=""
+#' @param cex the size of font on the axes, default=0.85
+#' @param fnt the font used on axes, default=7 (bold times)
+#' @param colour a vector of two values for the colour of each line,
+#'     default=c(1,2)  black and red
+#'
+#' @return nothing but it plots a graph
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' x <- 1:20
+#' yval1 <- rnorm(20,mean=5,sd=1)
+#' yval2 <- rnorm(20,mean=10,sd=1)
+#' plotxyy(x,yval1,yval2)
+#' }
+plotxyy <- function(x,y1,y2,xlab="",ylab1="",ylab2="",cex=0.85,fnt=7,
+                    colour=c(1,2)) {
+  par(mfrow=c(1,1),mai=c(0.45,0.45,0.15,0.05),oma=c(0.0,1.0,0.0,3.0)) 
+  par(cex=cex, mgp=c(1.35,0.35,0), font.axis=fnt,font=fnt,font.lab=fnt) 
+  maxy <- getmax(y1)
+  plot(x,y1,type="l",lwd=2,col=colour[1],ylim=c(0,maxy),yaxs="i",
+       ylab="")
+  mtext(ylab1, side=2, line=2)
+  mtext(xlab, side=1, line=1)
+  par(new=TRUE)
+  maxy2 <- getmax(y2)
+  plot(x,y2,type="l",lwd=2,col=colour[2],ylim=c(0,maxy2),axes=FALSE,
+       xlab="",ylab="",yaxs="i")
+  mtext(ylab2, side=4, line=1.5)
+  axis(4)
+  grid(ny=0)
+} # end of plotxyy
+
 #' @title printV returns a vector cbinded to 1:length(invect)
 #'
 #' @description printV takes an input vector and generates another vector of
