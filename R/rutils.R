@@ -1113,13 +1113,13 @@ plotprep <- function(width=6,height=3.6,usefont=7,cex=0.85,
 #' }
 plotxyy <- function(x,y1,y2,xlab="",ylab1="",ylab2="",cex=0.85,fnt=7,
                     colour=c(1,2)) {
-  par(mfrow=c(1,1),mai=c(0.45,0.45,0.15,0.05),oma=c(0.0,1.0,0.0,3.0)) 
+  par(mfrow=c(1,1),mai=c(0.5,0.45,0.15,0.05),oma=c(0.0,0.75,0.0,3.0)) 
   par(cex=cex, mgp=c(1.35,0.35,0), font.axis=fnt,font=fnt,font.lab=fnt) 
   maxy <- getmax(y1)
   plot(x,y1,type="l",lwd=2,col=colour[1],ylim=c(0,maxy),yaxs="i",
-       ylab="")
-  mtext(ylab1, side=2, line=2)
-  mtext(xlab, side=1, line=1)
+       ylab="",xlab="")
+  mtext(ylab1, side=2, line=1.5)
+  mtext(xlab, side=1, line=1.25)
   par(new=TRUE)
   maxy2 <- getmax(y2)
   plot(x,y2,type="l",lwd=2,col=colour[2],ylim=c(0,maxy2),axes=FALSE,
@@ -1165,7 +1165,8 @@ printV <- function(invect,label=c("index","value")) {
 #'
 #' @description properties - used to check a data.frame before
 #'     standardization. The maximum and minimum are constrained to four
-#'     decimal places.
+#'     decimal places. It allows for columns of NAs and for Posix 
+#'     columns.
 #' @param indat the data.frame containing the data fields to be used
 #'     in the subsequent standardization. It tabulates the number of
 #'     NAs and the number of unique values for each variable and finds
@@ -1181,17 +1182,30 @@ printV <- function(invect,label=c("index","value")) {
 #'  data(abdat)
 #'  properties(abdat$fish)
 #' }
-properties <- function(indat,dimout=FALSE) {
+properties <- function(indat,dimout=FALSE) {  # indat=ablong; dimout=FALSE
+  dominmax <- function(x) {
+    if (length(which(x > 0)) == 0) return(c(NA,NA))
+    mini <- min(x,na.rm=TRUE)
+    maxi <- max(x,na.rm=TRUE)
+    return(c(mini,maxi))
+  }
   if(dimout) print(dim(indat))
   isna <- sapply(indat,function(x) sum(is.na(x)))
   uniques <- sapply(indat,function(x) length(unique(x)))
-  clas <- sapply(indat,class)
+  columns <- length(indat)
+  clas <- character(columns)
+  for (i in 1:columns) {
+    clas[i] <- class(indat[,i])[1]
+  }
   numbers <- c("integer","numeric")
   pick <- which(clas %in% numbers)
   minimum <- numeric(length(uniques))
   maximum <- minimum
-  minimum[pick] <- sapply(indat[,pick],min,na.rm=TRUE)
-  maximum[pick] <- sapply(indat[,pick],max,na.rm=TRUE)
+  for (i in 1:length(pick)) {
+    minmax <- dominmax(indat[,pick[i]])
+    minimum[pick[i]] <- minmax[1]
+    maximum[pick[i]] <- minmax[2]
+  }
   index <- 1:length(isna)
   props <- as.data.frame(cbind(index,isna,uniques,clas,round(minimum,4),
                                round(maximum,4),t(indat[1,])))

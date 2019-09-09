@@ -23,7 +23,8 @@ a data.frame with the rows being each variable from the input
 \description{
 properties - used to check a data.frame before
     standardization. The maximum and minimum are constrained to four
-    decimal places.
+    decimal places. It allows for columns of NAs and for Posix 
+    columns.
 }
 \examples{
 \dontrun{
