@@ -5,7 +5,7 @@
 \title{plotprep: sets up a window and the par values for a single plot}
 \usage{
 plotprep(width = 6, height = 3.6, usefont = 7, cex = 0.85,
-  newdev = TRUE, filename = "")
+  newdev = TRUE, filename = "", resol = 300)
 }
 \arguments{
 \item{width}{defaults to 6 inches = 15.24cm - width of plot}
@@ -21,7 +21,9 @@ defaults to TRUE}
 
 \item{filename}{defaults to "" = do not save to a filename. If a
 filename is input the last three characters will be checked and if
-they are not png then .png will be added (at a resolution of 300)}
+they are not png then .png will be added.}
+
+\item{resol}{resolution of the png file, if defined, default=300}
 }
 \value{
 Checks for and sets up a graphics device and sets the default 

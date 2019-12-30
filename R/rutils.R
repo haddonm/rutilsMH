@@ -41,9 +41,9 @@
 #' @name rutilsMH
 NULL
 
-#' @importFrom grDevices dev.cur dev.new dev.off png
+#' @importFrom grDevices dev.cur dev.new dev.off png palette
 #' @importFrom graphics par grid plot axis mtext polygon title
-#' @importFrom utils tail
+#' @importFrom utils tail head str
 #' @importFrom stats quantile loess sd 
 NULL
 
@@ -1053,8 +1053,9 @@ plot1 <- function(x,y,xlabel="",ylabel="",type="l",usefont=7,cex=0.85,
 #'     defaults to TRUE
 #' @param filename defaults to "" = do not save to a filename. If a
 #'     filename is input the last three characters will be checked and if
-#'     they are not png then .png will be added (at a resolution of 300)
-
+#'     they are not png then .png will be added.
+#' @param resol resolution of the png file, if defined, default=300
+#' 
 #' @return Checks for and sets up a graphics device and sets the default 
 #'     plotting par values. This changes the current plotting options!
 #' @export
@@ -1065,14 +1066,14 @@ plot1 <- function(x,y,xlabel="",ylabel="",type="l",usefont=7,cex=0.85,
 #'  hist(x,breaks=30,main="",col=2)
 #' }
 plotprep <- function(width=6,height=3.6,usefont=7,cex=0.85,
-                     newdev=TRUE,filename="") {
+                     newdev=TRUE,filename="",resol=300) {
   if  ((names(dev.cur()) != "null device") &
        (newdev)) suppressWarnings(dev.off())
   lenfile <- nchar(filename)
   if (lenfile > 3) {
     end <- substr(filename,(lenfile-3),lenfile)
     if (end != ".png") filename <- paste0(filename,".png")
-    png(filename=filename,width=width,height=height,units="in",res=300)
+    png(filename=filename,width=width,height=height,units="in",res=resol)
   } else {
     if (names(dev.cur()) %in% c("null device","RStudioGD"))
       dev.new(width=width,height=height,noRStudioGD = TRUE)
@@ -1260,6 +1261,47 @@ removeEmpty <- function(invect) {
   tmp <- tmp[nchar(tmp) > 0]
   return(tmp)
 }
+
+#' @title setpalette is a shortcut for altering the palette to R4
+#' 
+#' @description setpalette is a shortcut for changing the 
+#'     default color palette to the new R version 4.0.0 version
+#'     before it comes out. The new palette was described in a
+#'     blog post at developer.r-project.org and provides less 
+#'     garish and a more visible set of default colours that can
+#'     be called using the numbers 1 - 8. An important point is 
+#'     that this alters the default colours for all sessions
+#'     until a restart of R. Using something similar you can 
+#'     define your own preferred palettes should you wish to.     
+#'     
+#' @param x either "default", "R3", or "R4", with R4 as the 
+#'     default value. Use "default" or "R3" to revert back to the
+#'     standard R version 3. values.
+#'
+#' @return nothing but it does alter the base palette
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'    setpalette("R3")
+#'    plot(1:8,rep(0.25,8),type="p",pch=16,cex=5,col=c(1:8))
+#'    setpalette("R4")
+#'    points(1:8,rep(0.3,8),pch=16,cex=5,col=c(1:8)) #toprow
+#' }
+setpalette <- function(x="R4") { # x="R4"
+  choice <- c("default","R3","R4")
+  if (x %in% choice) {
+    if ((x == "R3") | (x == "default")) {
+      palette("default")
+    }
+    if (x == "R4") {
+      palette(c("#000000", "#DF536B", "#61D04F", "#2297E6",
+                "#28E2E5", "#CD0BBC", "#EEC21F", "#9E9E9E"))
+    }
+  } else {
+    cat("Currently options are default, R3, or R4 \n")
+  }
+} # end of setpalette
 
 #' @title setplot provides an example plot with defaults for a standard plot
 #'
