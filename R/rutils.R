@@ -1008,8 +1008,7 @@ pkgfuns <- function(packname) { # packname=pkgname
 #' @param defpar if TRUE then plot1 will declare a par statement. If false 
 #'     it will expect one outside the function. In this way plot1 can be
 #'     used when plotting multiple graphs, perhaps as mfrow=c(2,2)
-#' @param inpch the input character type if using type="p", default=16
-#' @param incol the colour to use for the line or points, default = black
+#' @param ... room for other graphics commands like col, pch, and lwd
 #'
 #' @return nothing but it does plot a graph and changes the par setting
 #' @export
@@ -1020,17 +1019,16 @@ pkgfuns <- function(packname) { # packname=pkgname
 #' plot1(x,x,xlabel="x-values",ylabel="yvalues")
 #' }
 plot1 <- function(x,y,xlabel="",ylabel="",type="l",usefont=7,cex=0.85,
-                  limity=c(0,0),defpar=TRUE,inpch=16,incol=1){
+         limity=c(0,0),defpar=TRUE,...){
   if (defpar) {
     par(mfrow = c(1,1), mai = c(0.45,0.45,0.1,0.05),oma = c(0,0,0,0))
     par(cex = cex, mgp = c(1.35, 0.35, 0), font.axis = usefont,
         font = usefont, font.lab = usefont)
   }
-  if (limity[2] > 0) limit = limity  else limit = c(0,getmax(y))
-  if (min(y,na.rm=TRUE) < 0.0) limit[1] <- getmin(y)
-  addline <- FALSE
-  plot(x,y,type=type,pch=inpch,lwd=2,col=incol,ylim=limit,yaxs="i",
-       ylab=ylabel,xlab=xlabel,cex=cex,panel.first=grid())
+  if (limity[2] > 0) limy <- limity  else limy <- c(0,getmax(y))
+  if (min(y,na.rm=TRUE) < 0.0) limy[1] <- getmin(y)
+  plot(x,y,type=type,ylim=limy,yaxs="i",
+       ylab=ylabel,xlab=xlabel,cex=cex,panel.first=grid(),...)
 } # end of plot1
 
 #' @title plotprep: sets up a window and the par values for a single plot
