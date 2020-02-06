@@ -4,8 +4,17 @@
 \alias{plotxyy}
 \title{plotxyy plots two vectors of numbers against single x-axis}
 \usage{
-plotxyy(x, y1, y2, xlab = "", ylab1 = "", ylab2 = "", cex = 0.85,
-  fnt = 7, colour = c(1, 2))
+plotxyy(
+  x,
+  y1,
+  y2,
+  xlab = "",
+  ylab1 = "",
+  ylab2 = "",
+  cex = 0.85,
+  fnt = 7,
+  colour = c(1, 2)
+)
 }
 \arguments{
 \item{x}{the x values}

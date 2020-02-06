@@ -925,6 +925,10 @@ outfit <- function(inopt,backtransform=FALSE){
 #' @param cex the size of the font used, defaults to 0.85
 #' @param font the font used, defaults to 7 which is Times Bold, 6 is
 #'     Times, 1 is Sans and 2 is Sans Bold.
+#' @param outmargin default=c(0,0,0,0) and defines the outer margin used by
+#'     mtext
+#' @param margin default=c(0.45,0.45,0.05,0.05), which avoids whitespace 
+#'     but leaves plenty of room for titles
 #'
 #' @return nothing but it changes teh base graphics par settings
 #' @export
@@ -934,8 +938,9 @@ outfit <- function(inopt,backtransform=FALSE){
 #' parset()
 #' parsyn()
 #' }
-parset <- function(plots=c(1,1),cex=0.85,font=7) {
-  par(mfrow=plots,mai=c(0.45,0.45,0.05,0.05),oma=c(0.0,0,0.0,0.0))
+parset <- function(plots=c(1,1),cex=0.75,font=7,outmargin=c(0,0,0,0),
+                   margin=c(0.45,0.45,0.05,0.05)) {
+  par(mfrow=plots,mai=margin,oma=outmargin)
   par(cex=cex, mgp=c(1.35,0.35,0), font.axis=font,font=font,
       font.lab=font)
 } # end of parset

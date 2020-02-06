@@ -3,7 +3,6 @@
 \docType{package}
 \name{rutilsMH}
 \alias{rutilsMH}
-\alias{rutilsMH-package}
 \title{rutilsMH: a set of functions to assist with code development}
 \description{
 The rutilsMH package provides an array of utility functions:
