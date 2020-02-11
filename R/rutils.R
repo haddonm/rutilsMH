@@ -497,10 +497,10 @@ info <- function(invar) {
 #' @param x the vector of integers to be counted and plotted OR a matrix of
 #'     values in column 1 and counts in column 2
 #' @param col the colour of the fill; defaults to black = 1, set this to 0
-#'    for an empty bar, but then give a value for border
+#'     for an empty bar, but then give a value for border
 #' @param border the colour of the outline of each bar defaults to col
 #' @param width denotes the width of each bar; defaults to 1, should be >0
-#'    and <= 1
+#'     and <= 1
 #' @param xlabel the label for the x axis; defaults to ""
 #' @param ylabel the label for the y axis; defaults to ""
 #' @param main the title for the individual plot; defaults to ""
@@ -508,27 +508,27 @@ info <- function(invar) {
 #' @param xmin sets the lower bound for x-axis; used to match plots
 #' @param xmax sets the upper bound for x axis; used with multiple plots
 #' @param ymax enables external control of the maximum y value; mainly of
-#'    use when plotting multiple plots together.
+#'     use when plotting multiple plots together.
 #' @param plotout plot the histogram or not? Defaults to TRUE
 #' @param prop plot the proportions rather than the counts
 #' @param inc sets the xaxis increment; used to customize the axis;
-#'    defaults to 1.
+#'     defaults to 1.
 #' @param xaxis set to FALSE to define the xaxis outside of inthist;
-#'    defaults to TRUE
+#'     defaults to TRUE
+#' @param ... available to pass extra plot arguments, such as 
+#'     panel.first=grid(), or whatever to the internal plot call
 #' @return a matrix of values and counts is returned invisibly
 #' @export inthist
 #' @examples
 #' \dontrun{
-#'  x <- trunc(runif(1000)*10) + 1
-#'  plotprep(width=6,height=4)
-#'  inthist(x,col="grey",border=3,width=0.75,xlabel="Random Uniform",
-#'          ylabel="Frequency")
+#'   x <- trunc(runif(1000)*10) + 1
+#'   plotprep(width=6,height=4)
+#'   inthist(x,col="grey",border=3,width=0.75,xlabel="Random Uniform",
+#'           ylabel="Frequency")
 #' }
 inthist <- function(x,col=1,border=NULL,width=1,xlabel="",ylabel="",
                     main="",lwd=1,xmin=NA,xmax=NA,ymax=NA,plotout=TRUE,
-                    prop=FALSE,inc=1,xaxis=TRUE) {
-  # x=dat; col=1;border=NULL;width=1;xlabel="";ylabel="";
- # main="";lwd=1;xmin=NA;xmax=NA;ymax=NA;plotout=TRUE;prop=FALSE;inc=1;xaxis=TRUE
+                    prop=FALSE,inc=1,xaxis=TRUE,...) {
   if (class(x) == "matrix") {
     counts <- x[,2]
     values <- x[,1]
@@ -537,7 +537,6 @@ inthist <- function(x,col=1,border=NULL,width=1,xlabel="",ylabel="",
     if (length(counts) == 0) stop("No data provided \n\n")
     values <- as.numeric(names(counts))
   }
-  
   if (sum(!(abs(values - round(values)) < .Machine$double.eps^0.5)) > 0) {
     warning("Using 'inthist' with non-integers; Values now rounded \n")
     values <- round(values,0)
@@ -566,7 +565,7 @@ inthist <- function(x,col=1,border=NULL,width=1,xlabel="",ylabel="",
   if (plotout) {
     plot(values,outplot,type="n",
          xlim=c((xmin-(width*0.75)),(xmax+(width*0.75))),
-         xaxs="r",ylim=c(0,ymax),yaxs="i",xlab="",ylab="",xaxt="n")
+         xaxs="r",ylim=c(0,ymax),yaxs="i",xlab="",ylab="",xaxt="n",...)
     if (xaxis) axis(side=1,at=seq(xmin,xmax,inc),labels=seq(xmin,xmax,inc))
     if (length(counts) > 0) {
       for (i in 1:nct) {  # i <- 1
@@ -1036,7 +1035,7 @@ plot1 <- function(x,y,xlabel="",ylabel="",type="l",usefont=7,cex=0.85,
        ylab=ylabel,xlab=xlabel,cex=cex,panel.first=grid(),...)
 } # end of plot1
 
-#' @title plotprep: sets up a window and the par values for a single plot
+#' @title plotprep sets up a window and the par values for a single plot
 #'
 #' @description plotprep sets up a window and the par values for a single 
 #'     plot. It checks to see if a graphics device is open and opens a new 

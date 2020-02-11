@@ -2,7 +2,7 @@
 % Please edit documentation in R/rutils.R
 \name{plotprep}
 \alias{plotprep}
-\title{plotprep: sets up a window and the par values for a single plot}
+\title{plotprep sets up a window and the par values for a single plot}
 \usage{
 plotprep(
   width = 6,

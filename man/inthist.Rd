@@ -19,7 +19,8 @@ inthist(
   plotout = TRUE,
   prop = FALSE,
   inc = 1,
-  xaxis = TRUE
+  xaxis = TRUE,
+  ...
 )
 }
 \arguments{
@@ -58,6 +59,9 @@ defaults to 1.}
 
 \item{xaxis}{set to FALSE to define the xaxis outside of inthist;
 defaults to TRUE}
+
+\item{...}{available to pass extra plot arguments, such as 
+panel.first=grid(), or whatever to the internal plot call}
 }
 \value{
 a matrix of values and counts is returned invisibly
@@ -71,9 +75,9 @@ inthist - a replacement for the hist function for use with
 }
 \examples{
 \dontrun{
- x <- trunc(runif(1000)*10) + 1
- plotprep(width=6,height=4)
- inthist(x,col="grey",border=3,width=0.75,xlabel="Random Uniform",
-         ylabel="Frequency")
+  x <- trunc(runif(1000)*10) + 1
+  plotprep(width=6,height=4)
+  inthist(x,col="grey",border=3,width=0.75,xlabel="Random Uniform",
+          ylabel="Frequency")
 }
 }
