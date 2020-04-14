@@ -359,6 +359,44 @@ getnamespace <- function(fun) {
   return(nss[vapply(envs, function(env) exists(fun, env, inherits = FALSE),logical(1))])
 } # end of get_namespace
 
+#' @title getseed generates a random number seed
+#' 
+#' @description getseed generates a seed for use within set.seed. 
+#'     It produces up to a 6 digit integer from the Sys.time. This
+#'     Initially, at the start of a session there is no seed; a new one 
+#'     is created from the current time and the process ID when one is 
+#'     first required. Here, in getseed, we do not use the process ID so 
+#'     the process is not identical but this at least allows the 
+#'     set.seed value to be stored should the need to repeat a set of 
+#'     simulations arise. The process generates up to a six digit number
+#'     it then randomly reorders those digits and that becomes the seed.
+#'     That way, if you were to call getseed in quick succession the
+#'     seeds generated should differ even when they are generated close
+#'     together in time.
+#'
+#' @return  an integer up to 7 digits long 
+#' @export
+#'
+#' @examples
+#' useseed <- getseed()
+#' set.seed(useseed)
+#' rnorm(5)
+#' set.seed(12345)
+#' rnorm(5)
+#' set.seed(useseed)
+#' rnorm(5)
+getseed <- function() {
+  pickseed <- as.character(as.integer(Sys.time()))
+  nc <- nchar(pickseed)
+  if (nc > 7) pickseed <- substr(pickseed,(nc-6),nc)
+  nc <- nchar(pickseed)  
+  pseed <- unlist(strsplit(pickseed,split=character(0)))
+  pseed <- sample(pseed,nc)
+  newseed <- paste(pseed,collapse="")
+  newseed <- as.numeric(newseed)
+  return(newseed)
+} # end of getseed
+
 #' @title gettime calculates time in seconds passed each day
 #' 
 #' @description gettime is a function designed to facilitate the measurement
@@ -1001,8 +1039,8 @@ pkgfuns <- function(packname) { # packname=pkgname
 #' @param x The single vector of x data
 #' @param y the single vector of y data. If more are required they can
 #'     be added spearately after calling plot1.
-#' @param xlabel the label fot the x-axis, defaults to empty
-#' @param ylabel the label fot the y-axis, defaults to empty
+#' @param xlab the label fot the x-axis, defaults to empty
+#' @param ylab the label fot the y-axis, defaults to empty
 #' @param type the type of plot "l" is for line, the default, "p" is
 #'     points. If you want both plot a line and add points afterwards.
 #' @param usefont which font to use, defaults to 7 which is Times bold
@@ -1022,17 +1060,17 @@ pkgfuns <- function(packname) { # packname=pkgname
 #' x <- rnorm(20,mean=5,sd=1)
 #' plot1(x,x,xlabel="x-values",ylabel="yvalues")
 #' }
-plot1 <- function(x,y,xlabel="",ylabel="",type="l",usefont=7,cex=0.85,
-         limity=c(0,0),defpar=TRUE,...){
+plot1 <- function(x,y,xlab="",ylab="",type="l",usefont=7,cex=0.75,
+         maxy=0,defpar=TRUE,...){
   if (defpar) {
     par(mfrow = c(1,1), mai = c(0.45,0.45,0.1,0.05),oma = c(0,0,0,0))
     par(cex = cex, mgp = c(1.35, 0.35, 0), font.axis = usefont,
         font = usefont, font.lab = usefont)
   }
-  if (limity[2] > 0) limy <- limity  else limy <- c(0,getmax(y))
-  if (min(y,na.rm=TRUE) < 0.0) limy[1] <- getmin(y)
-  plot(x,y,type=type,ylim=limy,yaxs="i",
-       ylab=ylabel,xlab=xlabel,cex=cex,panel.first=grid(),...)
+  if (maxy > 0) ymax <- maxy  else ymax <- getmax(y)
+  if (min(y,na.rm=TRUE) < 0.0) ymin[1] <- getmin(y) else ymin <- 0.0
+  plot(x,y,type=type,ylim=c(ymin,ymax),yaxs="i",
+       ylab=ylab,xlab=xlab,cex=cex,panel.first=grid(),...)
 } # end of plot1
 
 #' @title plotprep sets up a window and the par values for a single plot
@@ -1057,6 +1095,8 @@ plot1 <- function(x,y,xlabel="",ylabel="",type="l",usefont=7,cex=0.85,
 #'     filename is input the last three characters will be checked and if
 #'     they are not png then .png will be added.
 #' @param resol resolution of the png file, if defined, default=300
+#' @pram verbose set this to FALSE to turn off the reminder to include 
+#'     a graphics.off() command after the plot. Default=TRUE
 #' 
 #' @return Checks for and sets up a graphics device and sets the default 
 #'     plotting par values. This changes the current plotting options!
@@ -1068,7 +1108,7 @@ plot1 <- function(x,y,xlabel="",ylabel="",type="l",usefont=7,cex=0.85,
 #'  hist(x,breaks=30,main="",col=2)
 #' }
 plotprep <- function(width=6,height=3.6,usefont=7,cex=0.85,
-                     newdev=TRUE,filename="",resol=300) {
+                     newdev=TRUE,filename="",resol=300,verbose=TRUE) {
   if  ((names(dev.cur()) != "null device") &
        (newdev)) suppressWarnings(dev.off())
   lenfile <- nchar(filename)
@@ -1080,11 +1120,13 @@ plotprep <- function(width=6,height=3.6,usefont=7,cex=0.85,
     if (names(dev.cur()) %in% c("null device","RStudioGD"))
       dev.new(width=width,height=height,noRStudioGD = TRUE)
   }
+  oldpar <- par(no.readonly=TRUE)
   par(mfrow=c(1,1),mai=c(0.45,0.45,0.05,0.05),oma=c(0.0,0.0,0.0,0.0))
   par(cex=cex, mgp=c(1.35,0.35,0), font.axis=usefont,font=usefont,
       font.lab=usefont)
-  if (lenfile > 0) 
-    cat("\n Remember to place 'graphics.off()' after the plot \n")
+  if ((lenfile > 0) & (verbose))
+    cat("\n Remember to place 'graphics.off()' after plot \n")
+  return(invisible(oldpar))
 } # end of plotprep
 
 #' @title plotxyy plots two vectors of numbers against single x-axis
@@ -1380,6 +1422,45 @@ splitDate <- function(dat=NA) {
   names(ans) <- c("Year","Month","Day","Time","DateTime")
   return(ans)
 } # end of split_Date
+
+#' @title uphist a histogram with an upper limit on the x-axis
+#' 
+#' @description uphist is merely a wrapper around the base hist
+#'     function, which adds the ability to limit the upper value on
+#'     the x-axis. With fisheries data it is surprisingly common to 
+#'     have data that has a very few extreme values that can obscure
+#'     a standard plot of the data. The data are only truncated 
+#'     within the uphist function so any other analyses will be on all 
+#'     available data. If a maximum value is selected which 
+#'     accidently eliminates all available data the script stops with
+#'     an appropriate warning. If a value is selected which fails to 
+#'     eliminate any data then all data are used.
+#'
+#' @param x the vector of values to be plotted as a histogram
+#' @param maxval the maximum value to be retained in the plotted data
+#' @param ... all the other arguments used by the base hist function
+#'
+#' @return nothing, but it does plot a histogram
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   x <- rlnorm(5000, meanlog=2, sdlog=1)
+#'   hist(x,breaks=30,main="",xlab="log-normal values")
+#'   uphist(x,breaks=30,main="",xlab="log-normal values",maxval=100)
+#'   uphist(x,breaks=30,main="",xlab="log-normal values",maxval=1000)
+#' }
+uphist <- function(x,maxval=NA,...) {
+  if (is.numeric(maxval)) {
+    pick <- which(x > maxval)
+    if (length(pick) > 0) x <- x[-pick]
+  }
+  if (length(x) > 0){
+    hist(x,...)
+  } else {
+    stop("maxval in uphist too small and no data remaining. \n")
+  }
+} # end of uphist
 
 #' @title which.closest find the number closest to a given value
 #'

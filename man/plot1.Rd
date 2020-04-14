@@ -7,12 +7,12 @@
 plot1(
   x,
   y,
-  xlabel = "",
-  ylabel = "",
+  xlab = "",
+  ylab = "",
   type = "l",
   usefont = 7,
-  cex = 0.85,
-  limity = c(0, 0),
+  cex = 0.75,
+  maxy = 0,
   defpar = TRUE,
   ...
 )
@@ -23,9 +23,9 @@ plot1(
 \item{y}{the single vector of y data. If more are required they can
 be added spearately after calling plot1.}
 
-\item{xlabel}{the label fot the x-axis, defaults to empty}
+\item{xlab}{the label fot the x-axis, defaults to empty}
 
-\item{ylabel}{the label fot the y-axis, defaults to empty}
+\item{ylab}{the label fot the y-axis, defaults to empty}
 
 \item{type}{the type of plot "l" is for line, the default, "p" is
 points. If you want both plot a line and add points afterwards.}
@@ -34,14 +34,14 @@ points. If you want both plot a line and add points afterwards.}
 
 \item{cex}{the size of the fonts used. defaults to 0.85}
 
-\item{limity}{defaults to c(0,0), which does nothing. If a value is given
-then this value is used rather than estimating from the input y}
-
 \item{defpar}{if TRUE then plot1 will declare a par statement. If false 
 it will expect one outside the function. In this way plot1 can be
 used when plotting multiple graphs, perhaps as mfrow=c(2,2)}
 
 \item{...}{room for other graphics commands like col, pch, and lwd}
+
+\item{limity}{defaults to c(0,0), which does nothing. If a value is given
+then this value is used rather than estimating from the input y}
 }
 \value{
 nothing but it does plot a graph and changes the par setting

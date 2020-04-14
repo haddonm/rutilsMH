@@ -11,7 +11,8 @@ plotprep(
   cex = 0.85,
   newdev = TRUE,
   filename = "",
-  resol = 300
+  resol = 300,
+  verbose = TRUE
 )
 }
 \arguments{
