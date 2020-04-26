@@ -2,9 +2,10 @@
 
 To install from github it is most simple from inside RStudio using:
 
-if (!require(devtools)){install.packages("devtools")} devtools::install_github("https://github.com/haddonm/datalowSA",build_vignettes=TRUE)
+if (!require(devtools)){install.packages("devtools")} 
+devtools::install_github("https://github.com/haddonm/rutilsMH")
 
-Though I still have to write a full vignette
+Though I still have to write a vignette
 
 Contains a set of functions I use all the time when using R
 
