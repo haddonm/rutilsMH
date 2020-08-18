@@ -13,7 +13,8 @@ plotxyy(
   ylab2 = "",
   cex = 0.85,
   fnt = 7,
-  colour = c(1, 2)
+  colour = c(1, 2),
+  defpar = FALSE
 )
 }
 \arguments{
@@ -35,6 +36,10 @@ plotxyy(
 
 \item{colour}{a vector of two values for the colour of each line,
 default=c(1,2)  black and red}
+
+\item{defpar}{should the internal 'par' statement be used = defpar=TRUE, or
+the default=FALSE, which means the plot 'par' will be defined outside the
+plot.}
 }
 \value{
 nothing but it plots a graph

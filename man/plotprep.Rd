@@ -32,6 +32,9 @@ filename is input the last three characters will be checked and if
 they are not png then .png will be added.}
 
 \item{resol}{resolution of the png file, if defined, default=300}
+
+\item{verbose}{set this to FALSE to turn off the reminder to include 
+a graphics.off() command after the plot. Default=TRUE}
 }
 \value{
 Checks for and sets up a graphics device and sets the default 

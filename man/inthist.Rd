@@ -2,13 +2,13 @@
 % Please edit documentation in R/rutils.R
 \name{inthist}
 \alias{inthist}
-\title{inthist a replacement for the hist function for use with integers}
+\title{inthist a replacement for the hist and boxplot functions}
 \usage{
 inthist(
   x,
   col = 1,
   border = NULL,
-  width = 1,
+  width = 0.9,
   xlabel = "",
   ylabel = "",
   main = "",
@@ -20,19 +20,20 @@ inthist(
   prop = FALSE,
   inc = 1,
   xaxis = TRUE,
+  roundoff = TRUE,
   ...
 )
 }
 \arguments{
-\item{x}{the vector of integers to be counted and plotted OR a matrix of
-values in column 1 and counts in column 2}
+\item{x}{a vector of integers to be counted and plotted OR a matrix of
+values in column 1 and counts or totals in column 2}
 
 \item{col}{the colour of the fill; defaults to black = 1, set this to 0
 for an empty bar, but then give a value for border}
 
 \item{border}{the colour of the outline of each bar defaults to col}
 
-\item{width}{denotes the width of each bar; defaults to 1, should be >0
+\item{width}{denotes the width of each bar; defaults to 0.9, should be >0
 and <= 1}
 
 \item{xlabel}{the label for the x axis; defaults to ""}
@@ -43,16 +44,18 @@ and <= 1}
 
 \item{lwd}{the line width of the border; defaults to 1}
 
-\item{xmin}{sets the lower bound for x-axis; used to match plots}
+\item{xmin}{sets the lower bound for x-axis; used to match plots, defaults to 
+NA whereupon the minimum of values is used}
 
-\item{xmax}{sets the upper bound for x axis; used with multiple plots}
+\item{xmax}{sets the upper bound for x axis; used with multiple plots, 
+defaults to NA whereupon the maximum of values is used}
 
 \item{ymax}{enables external control of the maximum y value; mainly of
 use when plotting multiple plots together.}
 
 \item{plotout}{plot the histogram or not? Defaults to TRUE}
 
-\item{prop}{plot the proportions rather than the counts}
+\item{prop}{plot the proportions rather than the counts, default=FALSE}
 
 \item{inc}{sets the xaxis increment; used to customize the axis;
 defaults to 1.}
@@ -60,24 +63,32 @@ defaults to 1.}
 \item{xaxis}{set to FALSE to define the xaxis outside of inthist;
 defaults to TRUE}
 
+\item{roundoff}{if values are not integers should they be rounded off to
+become integers? default=TRUE. Obviously only useful when inputting a
+matrix.}
+
 \item{...}{available to pass extra plot arguments, such as 
 panel.first=grid(), or whatever to the internal plot call}
 }
 \value{
-a matrix of values and counts is returned invisibly
+a matrix of values and counts with the proportions of counts and 
+    values is returned invisibly
 }
 \description{
-inthist - a replacement for the hist function for use with
-    integers because the ordinary function fails to count them correctly 
-    at the end. The function is designed for integers and if it is given 
-    real numbers it will issue a warning and then round all values before 
-    plotting.
+inthist it is common to want to generate a list of counts as
+    integers from an input vector and then plot then as columns of those
+    counts. Alternatively, it is common to have a two-column matrix of 
+    values and counts or totals where one wants to plot columns of those
+    counts or totals against those values. inhist allows one to enter either 
+    a vector of integers to be counted and plotted OR a matrix of values in 
+    column 1 and counts or totals in column 2. The option of rounding 
+    non-integers is available.
 }
 \examples{
-\dontrun{
   x <- trunc(runif(1000)*10) + 1
-  plotprep(width=6,height=4)
   inthist(x,col="grey",border=3,width=0.75,xlabel="Random Uniform",
           ylabel="Frequency")
-}
+  x <- as.matrix(cbind(c(1,2,3,4,5,6,7,8),trunc(runif(8,1,20))))
+  inthist(x,col="grey",border=3,width=0.75,xlabel="integers",
+          ylabel="Frequency")
 }

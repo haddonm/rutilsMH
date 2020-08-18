@@ -9,7 +9,8 @@ parset(
   cex = 0.75,
   font = 7,
   outmargin = c(0, 0, 0, 0),
-  margin = c(0.45, 0.45, 0.05, 0.05)
+  margin = c(0.45, 0.45, 0.05, 0.05),
+  byrow = TRUE
 )
 }
 \arguments{
@@ -25,9 +26,12 @@ mtext}
 
 \item{margin}{default=c(0.45,0.45,0.05,0.05), which avoids whitespace 
 but leaves plenty of room for titles}
+
+\item{byrow}{should plots be made by row (mfrow; byrow=TRUE, the default),
+of by column (mfcol; byrow=FALSE)}
 }
 \value{
-nothing but it changes teh base graphics par settings
+nothing but it changes the base graphics par settings
 }
 \description{
 parset alters the current base graphics par settings

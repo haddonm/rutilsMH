@@ -1,51 +1,5 @@
 
 
-#' rutilsMH: a set of functions to assist with code development
-#'
-#' The rutilsMH package provides an array of utility functions:
-#' these include documentation functions and summary functions
-#'
-#' @section Documentation functions:
-#' \describe{
-#'   \item{codeBlock}{generates a comment section ready to copy into code}
-#'   \item{classDF}{Tabulates the class of each column in a dataframe}
-#'   \item{getname}{returns the name of a variable as character}
-#'   \item{listFunctions}{lists all functions in a given R file}
-#'   \item{properties}{characterizes properties of data.frame columns}
-#' }
-#' @section Summary functions:
-#' \describe{
-#'   \item{classDF}{identifies the class of each column in a data.frame}
-#' }
-#' @section Plotting function:
-#' \describe{
-#'   \item{newplot}{bare-bones plotprep, opens a new device + default par}
-#'   \item{parsyn}{prints par command syntax to the console to be copied}
-#'   \item{plotprep}{sets up a plotting device external to Rstudio}
-#'   \item{setplot}{writes a base graphics template to the console}
-#' }
-#' @section Utility functions:
-#' \describe{
-#'   \item{countgtOne}{counts values >1 in a vector}
-#'   \item{countgtzero}{counts values >0 in a vector}
-#'   \item{countNAs}{count the numbr of NA values in a vector}
-#'   \item{countones}{count the number of values = 1 in a vector}
-#'   \item{countzeros}{count the number of values = 0 in a vector}
-#'   \item{lininterpol}{linearly replaces NA values in a vector}
-#'   \item{greplow}{a case ignoring 'grep'}
-#'   \item{printV}{prints a vector as a column with index numbers}
-#'   \item{quants}{used in apply to estimate quantiles across a vector}
-#'   \item{which.closest}{finds closest value in a vector to a given number}
-#' }
-#' @docType package
-#' @name rutilsMH
-NULL
-
-#' @importFrom grDevices dev.cur dev.new dev.off png palette
-#' @importFrom graphics par grid plot axis mtext polygon title
-#' @importFrom utils tail head str
-#' @importFrom stats quantile loess sd 
-NULL
 
 #' @title classDF - tabluate the class of each column in a da
 #'
@@ -153,6 +107,39 @@ countgtOne <- function(invect) {
   pick1 <- which(invect > 1.0)
   return(length(pick1)/length(invect))
 }
+
+#' @title extractcode pulls out the r-code blocks from Rmd files
+#' 
+#' @description extractcode pulls out the r-code blocks from Rmd files and 
+#'     saves them into a separate R file. 
+#'
+#' @param indir the directory in which the rmd file is to be found and into
+#'     which the output file will be placed.
+#' @param rmdfile the name of the Rmd file whose R code is to be extracted
+#' @param filename the name of the R file into which the r-code is to go. 
+#'
+#' @return generates an R file in the working directory, otherwise returns nothing
+#' @export
+#'
+#' @examples
+#' print("wait on a real example")
+extractcode <- function(indir,rmdfile,filename="out.R") { # indir=indir; rmdfile=inrmd; filename="out.R"
+  infile <- paste0(indir,"/",rmdfile)
+  fileout <- paste0(indir,"/",filename)
+  cat("# R-code from the file ",rmdfile,"\n\n",file=fileout,append=FALSE)
+  txt <- readLines(infile)
+  pick <- grep("```",txt)
+  steps <- length(pick)
+  for (i in seq(1,steps,2)) {
+    begin <- pick[i]
+    cat("#",txt[begin],"\n",file=fileout,append=TRUE)
+    finish <- pick[i+1]
+    for (j in (begin+1):(finish-1)) {
+      cat(txt[j],"\n",file=fileout,append=TRUE)
+    }
+    cat("#",txt[finish],"\n\n\n\n",file=fileout,append=TRUE)
+  }
+} # end of extractcode
 
 #' @title facttonum converts a vector of numeric factors into numbers
 #'
@@ -525,49 +512,61 @@ info <- function(invar) {
   }
 } # end of info
 
-#' @title inthist a replacement for the hist function for use with integers
+#' @title inthist a replacement for the hist and boxplot functions
 #'
-#' @description inthist - a replacement for the hist function for use with
-#'     integers because the ordinary function fails to count them correctly 
-#'     at the end. The function is designed for integers and if it is given 
-#'     real numbers it will issue a warning and then round all values before 
-#'     plotting.
-#' @param x the vector of integers to be counted and plotted OR a matrix of
-#'     values in column 1 and counts in column 2
+#' @description inthist it is common to want to generate a list of counts as
+#'     integers from an input vector and then plot then as columns of those
+#'     counts. Alternatively, it is common to have a two-column matrix of 
+#'     values and counts or totals where one wants to plot columns of those
+#'     counts or totals against those values. inhist allows one to enter either 
+#'     a vector of integers to be counted and plotted OR a matrix of values in 
+#'     column 1 and counts or totals in column 2. The option of rounding 
+#'     non-integers is available.
+
+#' @param x a vector of integers to be counted and plotted OR a matrix of
+#'     values in column 1 and counts or totals in column 2
 #' @param col the colour of the fill; defaults to black = 1, set this to 0
 #'     for an empty bar, but then give a value for border
 #' @param border the colour of the outline of each bar defaults to col
-#' @param width denotes the width of each bar; defaults to 1, should be >0
+#' @param width denotes the width of each bar; defaults to 0.9, should be >0
 #'     and <= 1
 #' @param xlabel the label for the x axis; defaults to ""
 #' @param ylabel the label for the y axis; defaults to ""
 #' @param main the title for the individual plot; defaults to ""
 #' @param lwd the line width of the border; defaults to 1
-#' @param xmin sets the lower bound for x-axis; used to match plots
-#' @param xmax sets the upper bound for x axis; used with multiple plots
+#' @param xmin sets the lower bound for x-axis; used to match plots, defaults to 
+#'     NA whereupon the minimum of values is used
+#' @param xmax sets the upper bound for x axis; used with multiple plots, 
+#'     defaults to NA whereupon the maximum of values is used
 #' @param ymax enables external control of the maximum y value; mainly of
 #'     use when plotting multiple plots together.
 #' @param plotout plot the histogram or not? Defaults to TRUE
-#' @param prop plot the proportions rather than the counts
+#' @param prop plot the proportions rather than the counts, default=FALSE
 #' @param inc sets the xaxis increment; used to customize the axis;
 #'     defaults to 1.
 #' @param xaxis set to FALSE to define the xaxis outside of inthist;
 #'     defaults to TRUE
+#' @param roundoff if values are not integers should they be rounded off to
+#'     become integers? default=TRUE. Obviously only useful when inputting a
+#'     matrix.
 #' @param ... available to pass extra plot arguments, such as 
 #'     panel.first=grid(), or whatever to the internal plot call
-#' @return a matrix of values and counts is returned invisibly
-#' @export inthist
+#'     
+#' @return a matrix of values and counts with the proportions of counts and 
+#'     values is returned invisibly
+#' @export
+#' 
 #' @examples
-#' \dontrun{
 #'   x <- trunc(runif(1000)*10) + 1
-#'   plotprep(width=6,height=4)
 #'   inthist(x,col="grey",border=3,width=0.75,xlabel="Random Uniform",
 #'           ylabel="Frequency")
-#' }
-inthist <- function(x,col=1,border=NULL,width=1,xlabel="",ylabel="",
+#'   x <- as.matrix(cbind(c(1,2,3,4,5,6,7,8),trunc(runif(8,1,20))))
+#'   inthist(x,col="grey",border=3,width=0.75,xlabel="integers",
+#'           ylabel="Frequency")
+inthist <- function(x,col=1,border=NULL,width=0.9,xlabel="",ylabel="",
                     main="",lwd=1,xmin=NA,xmax=NA,ymax=NA,plotout=TRUE,
-                    prop=FALSE,inc=1,xaxis=TRUE,...) {
-  if (class(x) == "matrix") {
+                    prop=FALSE,inc=1,xaxis=TRUE,roundoff=TRUE,...) {
+  if (class(x)[1] == "matrix") {
     counts <- x[,2]
     values <- x[,1]
   } else {
@@ -575,7 +574,8 @@ inthist <- function(x,col=1,border=NULL,width=1,xlabel="",ylabel="",
     if (length(counts) == 0) stop("No data provided \n\n")
     values <- as.numeric(names(counts))
   }
-  if (sum(!(abs(values - round(values)) < .Machine$double.eps^0.5)) > 0) {
+  if ((sum(!(abs(values - round(values)) < .Machine$double.eps^0.5)) > 0) &
+      (roundoff)) {
     warning("Using 'inthist' with non-integers; Values now rounded \n")
     values <- round(values,0)
   }
@@ -586,6 +586,7 @@ inthist <- function(x,col=1,border=NULL,width=1,xlabel="",ylabel="",
   counts <- as.numeric(counts)
   nct <- length(counts)
   propor <- counts/sum(counts,na.rm=TRUE)
+  propval <- values/sum(values,na.rm=TRUE)
   if (is.na(xmin)) xmin <- min(values,na.rm=TRUE)
   if (is.na(xmax)) xmax <- max(values,na.rm=TRUE)
   if (prop) {
@@ -620,9 +621,9 @@ inthist <- function(x,col=1,border=NULL,width=1,xlabel="",ylabel="",
     }
   } # end of if-plotout
   if (length(counts) > 0) {
-    answer <- cbind(values,counts,propor);
+    answer <- cbind(values,counts,propor,propval);
     rownames(answer) <- values
-    colnames(answer) <- c("values","counts","proportion")
+    colnames(answer) <- c("values","counts","propcounts","propvalues")
   } else { answer <- NA  }
   class(answer) <- "inthist"
   return(invisible(answer))
@@ -879,61 +880,81 @@ newplot <- function(width=6,height=3.6,newdev=TRUE) {
 #' @description outfit takes in the output list from either optim,
 #'     nlminb, or nlm and prints it more tidily to the console, In the
 #'     case of nlm it also prints the conclusion regarding the
-#'     solution
+#'     solution. It might be more effective to implement an S3 method.
 #'
 #' @param inopt the list object output by nlm, nlminb, or optim
-#' @param backtransform a logical default = FALSE. If TRUE it assumes
+#' @param backtran a logical default = TRUE If TRUE it assumes
 #'     that the parameters have been log-transformed for stability
 #'     and need back-transforming
+#' @param digits the number of digits to round the backtransformed 
+#'     parameters. defaults to 5.
+#' @param title character string used to label the output if desired,
+#'     default = empty character string
+#' @param parnames default="" which means the estimated parameters
+#'     will merely be numbered. If a vector of names is given 
+#'     then this will be used instead, at least, for nlm and optim.
 #'
 #' @return nothing but it does print the list to the console tidily
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #'  x <- 1:10  # generate power function data from c(2,2) + random
 #'  y <- c(2.07,8.2,19.28,40.4,37.8,64.68,100.2,129.11,151.77,218.94)
 #'  alldat <- cbind(x=x,y=y)
-#'  pow <- function(par,x) return(par[1] * x ^ par[2])
-#'  ssq <- function(par,indat) {
-#'     return(sum((indat[,"y"] - pow(par,indat[,"x"]))^2))
-#'  }
-#'  par=c(2,2)
-#'  best <- nlm(f=ssq,p=par,typsize=magnitude(par),indat=alldat)
-#'  outfit(best)  # a=1.3134 and b=2.2029 -veLL=571.5804
-#' }
-outfit <- function(inopt,backtransform=FALSE){
-  nlmcode <- c("relative gradient close to zero, probably solution.",
-               "repeated iterates in tolerance, probably solution.",
-               paste0("nothing lower than estimate.",
-                      "Either ~local min or steptol too small."),
-               "iteration limit exceeded.",
-               paste0("stepmax exceeded ,5 times. Unbounded or ",
-                      "asymptotic below or stepmax too small."))
+#'  pow <- function(pars,x) return(pars[1] * x ^ pars[2])
+#'  ssq <- function(pars,indat) {
+#'     return(sum((indat[,"y"] - pow(pars,indat[,"x"]))^2))
+#'  }  # fit a power curve using normal random errors
+#'  pars <- c(2,2)
+#'  best <- nlm(f=ssq,p=pars,typsize=magnitude(pars),indat=alldat)
+#'  outfit(best,backtran=FALSE) #a=1.3134, b=2.2029 ssq=571.5804
+outfit <- function(inopt,backtran=TRUE,digits=5,title="",
+                   parnames=""){
+  #  inopt=bestvB; backtran = FALSE; digits=5; title=""; parnames=""
+  nlmcode <- c("gradient close to 0, probably solution",
+               ">1 iterates in tolerance, probably solution",
+               "Either ~local min or steptol too small",
+               "iteration limit exceeded",
+               "stepmax exceeded ,5 times")
   if (length(grep("value",names(inopt))) > 0) { # optim
-    cat("optim solution:  \n")
-    cat("par         : ",inopt$par,"\n")
+    cat("optim solution: ", title,"\n")
     cat("minimum     : ",inopt$value,"\n")
     cat("iterations  : ",inopt$counts," iterations, gradient\n")
     cat("code        : ",inopt$convergence,"\n")
+    if (backtran) {
+      ans <- cbind(par=inopt$par,transpar=round(exp(inopt$par),digits))
+    } else {
+      ans <- t(inopt$par)
+    }
+    if ((length(parnames) > 1) & (length(parnames) == length(inopt$par))) {
+      rownames(ans) <- parnames
+    } else {
+      rownames(ans) <- 1:length(inopt$par)
+    }
+    print(ans)
     cat("message     : ",inopt$message,"\n")
-  }
+  } # end of optim
   if (length(grep("minimum",names(inopt))) > 0) {  # nlm - preferred
-    cat("nlm solution:  \n")
+    cat("nlm solution: ", title,"\n")
     cat("minimum     : ",inopt$minimum,"\n")
     cat("iterations  : ",inopt$iterations,"\n")
-    cat("code        : ",inopt$code,"  ",nlmcode[inopt$code],"\n")
-    if (backtransform) {
+    cat("code        : ",inopt$code,nlmcode[inopt$code],"\n")
+    if (backtran) {
       ans <- cbind(par=inopt$estimate,gradient=inopt$gradient,
-                   transpar=round(exp(inopt$estimate),6))
+                   transpar=round(exp(inopt$estimate),digits))
     } else {
       ans <- cbind(par=inopt$estimate,gradient=inopt$gradient)
     }
-    rownames(ans) <- 1:length(inopt$estimate)
+    if ((length(parnames) > 1) & 
+        (length(parnames) == length(inopt$estimate))) {
+      rownames(ans) <- parnames
+    } else {
+      rownames(ans) <- 1:length(inopt$estimate)
+    }
     print(ans)
-  }
+  } # end of nlm
   if (length(grep("objective",names(inopt))) > 0) {
-    cat("nlminb solution:  \n")   # nlminb seems to be deprecated
+    cat("nlminb solution: ", title,"\n")   # nlminb seems to be deprecated
     cat("par        : ",inopt$par,"\n")
     cat("minimum    : ",inopt$objective,"\n")
     cat("iterations : ",inopt$iterations,"\n")
@@ -945,6 +966,7 @@ outfit <- function(inopt,backtransform=FALSE){
     print(inopt$hessian)
   }
 } # end of outfit
+
 
 #' @title parset alters the current base graphics par settings
 #'
@@ -966,8 +988,10 @@ outfit <- function(inopt,backtransform=FALSE){
 #'     mtext
 #' @param margin default=c(0.45,0.45,0.05,0.05), which avoids whitespace 
 #'     but leaves plenty of room for titles
+#' @param byrow should plots be made by row (mfrow; byrow=TRUE, the default),
+#'     of by column (mfcol; byrow=FALSE)
 #'
-#' @return nothing but it changes teh base graphics par settings
+#' @return nothing but it changes the base graphics par settings
 #' @export
 #'
 #' @examples
@@ -976,8 +1000,12 @@ outfit <- function(inopt,backtransform=FALSE){
 #' parsyn()
 #' }
 parset <- function(plots=c(1,1),cex=0.75,font=7,outmargin=c(0,0,0,0),
-                   margin=c(0.45,0.45,0.05,0.05)) {
-  par(mfrow=plots,mai=margin,oma=outmargin)
+                   margin=c(0.45,0.45,0.05,0.05),byrow=TRUE) {
+  if (byrow) {
+    par(mfrow=plots,mai=margin,oma=outmargin)
+  } else {
+    par(mfcol=plots,mai=margin,oma=outmargin)
+  }
   par(cex=cex, mgp=c(1.35,0.35,0), font.axis=font,font=font,
       font.lab=font)
 } # end of parset
@@ -1045,8 +1073,8 @@ pkgfuns <- function(packname) { # packname=pkgname
 #'     points. If you want both plot a line and add points afterwards.
 #' @param usefont which font to use, defaults to 7 which is Times bold
 #' @param cex the size of the fonts used. defaults to 0.85
-#' @param limity defaults to c(0,0), which does nothing. If a value is given
-#'     then this value is used rather than estimating from the input y
+#' @param maxy defaults to 0, if a value is given then that value is used rather 
+#'     than estimating from the input y using getmax
 #' @param defpar if TRUE then plot1 will declare a par statement. If false 
 #'     it will expect one outside the function. In this way plot1 can be
 #'     used when plotting multiple graphs, perhaps as mfrow=c(2,2)
@@ -1095,7 +1123,7 @@ plot1 <- function(x,y,xlab="",ylab="",type="l",usefont=7,cex=0.75,
 #'     filename is input the last three characters will be checked and if
 #'     they are not png then .png will be added.
 #' @param resol resolution of the png file, if defined, default=300
-#' @pram verbose set this to FALSE to turn off the reminder to include 
+#' @param verbose set this to FALSE to turn off the reminder to include 
 #'     a graphics.off() command after the plot. Default=TRUE
 #' 
 #' @return Checks for and sets up a graphics device and sets the default 
@@ -1125,7 +1153,7 @@ plotprep <- function(width=6,height=3.6,usefont=7,cex=0.85,
   par(cex=cex, mgp=c(1.35,0.35,0), font.axis=usefont,font=usefont,
       font.lab=usefont)
   if ((lenfile > 0) & (verbose))
-    cat("\n Remember to place 'graphics.off()' after plot \n")
+    cat("\n Remember to place 'dev.off()' after plot \n")
   return(invisible(oldpar))
 } # end of plotprep
 
@@ -1145,6 +1173,9 @@ plotprep <- function(width=6,height=3.6,usefont=7,cex=0.85,
 #' @param fnt the font used on axes, default=7 (bold times)
 #' @param colour a vector of two values for the colour of each line,
 #'     default=c(1,2)  black and red
+#' @param defpar should the internal 'par' statement be used = defpar=TRUE, or
+#'     the default=FALSE, which means the plot 'par' will be defined outside the
+#'     plot.
 #'
 #' @return nothing but it plots a graph
 #' @export
@@ -1157,9 +1188,11 @@ plotprep <- function(width=6,height=3.6,usefont=7,cex=0.85,
 #' plotxyy(x,yval1,yval2)
 #' }
 plotxyy <- function(x,y1,y2,xlab="",ylab1="",ylab2="",cex=0.85,fnt=7,
-                    colour=c(1,2)) {
-  par(mfrow=c(1,1),mai=c(0.5,0.45,0.15,0.05),oma=c(0.0,0.75,0.0,3.0)) 
-  par(cex=cex, mgp=c(1.35,0.35,0), font.axis=fnt,font=fnt,font.lab=fnt) 
+                    colour=c(1,2),defpar=FALSE) {
+  if (defpar) {
+    par(mfrow=c(1,1),mai=c(0.5,0.45,0.15,0.05),oma=c(0.0,0.75,0.0,3.0)) 
+    par(cex=cex, mgp=c(1.35,0.35,0), font.axis=fnt,font=fnt,font.lab=fnt) 
+  }
   maxy <- getmax(y1)
   plot(x,y1,type="l",lwd=2,col=colour[1],ylim=c(0,maxy),yaxs="i",
        ylab="",xlab="")
@@ -1227,7 +1260,7 @@ printV <- function(invect,label=c("index","value")) {
 #'  data(abdat)
 #'  properties(abdat$fish)
 #' }
-properties <- function(indat,dimout=FALSE) {  # indat=ablong; dimout=FALSE
+properties <- function(indat,dimout=FALSE) {  # indat=sps1; dimout=FALSE
   dominmax <- function(x) {
     if (length(which(x > 0)) == 0) return(c(NA,NA))
     mini <- min(x,na.rm=TRUE)
@@ -1251,6 +1284,13 @@ properties <- function(indat,dimout=FALSE) {  # indat=ablong; dimout=FALSE
     minimum[pick[i]] <- minmax[1]
     maximum[pick[i]] <- minmax[2]
   }
+  pick <- which((clas == "character") & (isna == 0))
+  if (length(pick) > 0) {
+    for (i in 1:length(pick)) {
+      pickna <- which(indat[,pick[i]] == "NA")
+      if (length(pickna) > 0) isna[pick[i]] <- length(pickna)
+    }
+  }  
   index <- 1:length(isna)
   props <- as.data.frame(cbind(index,isna,uniques,clas,round(minimum,4),
                                round(maximum,4),t(indat[1,])))
@@ -1422,6 +1462,27 @@ splitDate <- function(dat=NA) {
   names(ans) <- c("Year","Month","Day","Time","DateTime")
   return(ans)
 } # end of split_Date
+
+#' @title toXL copies a data.frame or matrix to the clipboard
+#'
+#' @description toXL copies a data.frame or matrix to the clipboard
+#'    so one can then switch to Excel and just type <ctrl> + V to paste the
+#'    data in place
+#'
+#' @param x a vector or matrix
+#' @param output - a boolean determining whether to print the object to the
+#'    screen as well as the clipboard; defaults to FALSE
+#' @return Places the object 'x' into the clipboard ready for pasting
+#' @export toXL
+#' @examples
+#' datamatrix <- matrix(data=rnorm(100),nrow=10,ncol=10)
+#' colnames(datamatrix) <- paste0("A",1:10)
+#' rownames(datamatrix) <- paste0("B",1:10)
+#' toXL(datamatrix,output=TRUE)
+toXL <- function(x,output=FALSE) {
+  write.table(x,"clipboard",sep="\t")
+  if(output) print(x)
+}
 
 #' @title uphist a histogram with an upper limit on the x-axis
 #' 

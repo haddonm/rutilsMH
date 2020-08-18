@@ -4,14 +4,24 @@
 \alias{outfit}
 \title{outfit tidy print of output from optim, nlminb, or nlm}
 \usage{
-outfit(inopt, backtransform = FALSE)
+outfit(inopt, backtran = TRUE, digits = 5, title = "", parnames = "")
 }
 \arguments{
 \item{inopt}{the list object output by nlm, nlminb, or optim}
 
-\item{backtransform}{a logical default = FALSE. If TRUE it assumes
+\item{backtran}{a logical default = TRUE If TRUE it assumes
 that the parameters have been log-transformed for stability
 and need back-transforming}
+
+\item{digits}{the number of digits to round the backtransformed 
+parameters. defaults to 5.}
+
+\item{title}{character string used to label the output if desired,
+default = empty character string}
+
+\item{parnames}{default="" which means the estimated parameters
+will merely be numbered. If a vector of names is given 
+then this will be used instead, at least, for nlm and optim.}
 }
 \value{
 nothing but it does print the list to the console tidily
@@ -20,19 +30,17 @@ nothing but it does print the list to the console tidily
 outfit takes in the output list from either optim,
     nlminb, or nlm and prints it more tidily to the console, In the
     case of nlm it also prints the conclusion regarding the
-    solution
+    solution. It might be more effective to implement an S3 method.
 }
 \examples{
-\dontrun{
  x <- 1:10  # generate power function data from c(2,2) + random
  y <- c(2.07,8.2,19.28,40.4,37.8,64.68,100.2,129.11,151.77,218.94)
  alldat <- cbind(x=x,y=y)
- pow <- function(par,x) return(par[1] * x ^ par[2])
- ssq <- function(par,indat) {
-    return(sum((indat[,"y"] - pow(par,indat[,"x"]))^2))
- }
- par=c(2,2)
- best <- nlm(f=ssq,p=par,typsize=magnitude(par),indat=alldat)
- outfit(best)  # a=1.3134 and b=2.2029 -veLL=571.5804
-}
+ pow <- function(pars,x) return(pars[1] * x ^ pars[2])
+ ssq <- function(pars,indat) {
+    return(sum((indat[,"y"] - pow(pars,indat[,"x"]))^2))
+ }  # fit a power curve using normal random errors
+ pars <- c(2,2)
+ best <- nlm(f=ssq,p=pars,typsize=magnitude(pars),indat=alldat)
+ outfit(best,backtran=FALSE) #a=1.3134, b=2.2029 ssq=571.5804
 }

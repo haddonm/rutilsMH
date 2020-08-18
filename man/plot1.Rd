@@ -34,14 +34,14 @@ points. If you want both plot a line and add points afterwards.}
 
 \item{cex}{the size of the fonts used. defaults to 0.85}
 
+\item{maxy}{defaults to 0, if a value is given then that value is used rather 
+than estimating from the input y using getmax}
+
 \item{defpar}{if TRUE then plot1 will declare a par statement. If false 
 it will expect one outside the function. In this way plot1 can be
 used when plotting multiple graphs, perhaps as mfrow=c(2,2)}
 
 \item{...}{room for other graphics commands like col, pch, and lwd}
-
-\item{limity}{defaults to c(0,0), which does nothing. If a value is given
-then this value is used rather than estimating from the input y}
 }
 \value{
 nothing but it does plot a graph and changes the par setting
