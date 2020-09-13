@@ -566,6 +566,8 @@ info <- function(invar) {
 inthist <- function(x,col=1,border=NULL,width=0.9,xlabel="",ylabel="",
                     main="",lwd=1,xmin=NA,xmax=NA,ymax=NA,plotout=TRUE,
                     prop=FALSE,inc=1,xaxis=TRUE,roundoff=TRUE,...) {
+  #  x=ebtipy;col=2;border=3;width=0.9;xlabel="";ylabel="";main="";lwd=1;xmin=NA
+  #  xmax=NA;ymax=NA;plotout=TRUE;prop=FALSE;inc=1;xaxis=TRUE;roundoff=TRUE
   if (class(x)[1] == "matrix") {
     counts <- x[,2]
     values <- x[,1]
@@ -586,7 +588,6 @@ inthist <- function(x,col=1,border=NULL,width=0.9,xlabel="",ylabel="",
   counts <- as.numeric(counts)
   nct <- length(counts)
   propor <- counts/sum(counts,na.rm=TRUE)
-  propval <- values/sum(values,na.rm=TRUE)
   if (is.na(xmin)) xmin <- min(values,na.rm=TRUE)
   if (is.na(xmax)) xmax <- max(values,na.rm=TRUE)
   if (prop) {
@@ -621,9 +622,9 @@ inthist <- function(x,col=1,border=NULL,width=0.9,xlabel="",ylabel="",
     }
   } # end of if-plotout
   if (length(counts) > 0) {
-    answer <- cbind(values,counts,propor,propval);
+    answer <- cbind(values,counts,propor);
     rownames(answer) <- values
-    colnames(answer) <- c("values","counts","propcounts","propvalues")
+    colnames(answer) <- c("values","counts","propcounts")
   } else { answer <- NA  }
   class(answer) <- "inthist"
   return(invisible(answer))
@@ -1101,6 +1102,26 @@ plot1 <- function(x,y,xlab="",ylab="",type="l",usefont=7,cex=0.75,
        ylab=ylab,xlab=xlab,cex=cex,panel.first=grid(),...)
 } # end of plot1
 
+#' @title plotnull generates an empty plot when one is needed
+#'
+#' @description plotnull there are often circumstances, for example, when
+#'     plotting up results from each year and each SAU, where there will be
+#'     combinations of year and SAU that have no data, but to avoid a problem
+#'     with the plotting it is necessary to generate an empty plot.
+#'
+#' @param msg a message to be printed in the middle of the empty plot.
+#'
+#' @return nothing but it does generate a plot
+#' @export
+#'
+#' @examples
+#' plotnull("An empty plot")
+plotnull <- function(msg="") {
+  plot(1:10,1:10,type="n",xaxt="n",yaxt="n",xlab="",ylab="")
+  if (nchar(msg) > 0)
+    text(x=5,y=5,msg,cex=1.0,font=7)
+} # end of plotnull
+
 #' @title plotprep sets up a window and the par values for a single plot
 #'
 #' @description plotprep sets up a window and the par values for a single 
@@ -1439,7 +1460,7 @@ setplot <- function() {
 #' @return a vector od characters relating to 'Year', 'Month', 'Day','Time',
 #'     and a DateTime, which is a combination of all of these suitable for
 #'     inclusion in a filename.
-#' @export splitDate
+#' @export
 #' @examples
 #' \dontrun{
 #' tmp <- splitDate()
@@ -1462,6 +1483,40 @@ splitDate <- function(dat=NA) {
   names(ans) <- c("Year","Month","Day","Time","DateTime")
   return(ans)
 } # end of split_Date
+
+#' @title tidynames can replace awkward data.frame names with better ones
+#'
+#' @description tidynames can replace awkward or overly long data.frame
+#'     column names with better ones than are easier to use. It also
+#'     permits one to maintain the same set of column names within an
+#'     analysis even when the source data.frame includes alterations.
+#'
+#' @param columns the vector of names that shoudl include the ones to be
+#'     altered
+#' @param replace the names to be changed, as a vector of character
+#'     strings
+#' @param repwith the replacement names as a vector of character strings
+#'
+#' @return a vector of new columns names
+#' @export
+#'
+#' @examples
+#'  print("wait")
+tidynames <- function(columns,replace,repwith) {
+  nreplace <- length(replace)
+  if (nreplace != length(repwith))
+    stop("Different number of names in replace and repwith \n")
+  for (i in 1:nreplace) {
+    pick <- grep(replace[i],columns)
+    #cat(i,pick,"\n")
+    if (pick[1] > 0) {
+      columns[pick[1]] <- repwith[i]
+    } else {
+      warning(paste0(replace[i]," not in the dataset"))
+    }
+  }
+  return(columns)
+} # end of tidynames
 
 #' @title toXL copies a data.frame or matrix to the clipboard
 #'
