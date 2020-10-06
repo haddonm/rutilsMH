@@ -17,4 +17,6 @@ When conducting analyses using R there are functions I use all the time for plot
 
 * 0.1.4 revised plot1, plotxyy, and inthist. inthist now returns the proportional distribution of the counts and the proportional distribution of the values
 
-* 2020-09-13 0.1.5 added plotnull and tidynames 
+* 0.1.5 2020-09-13 added plotnull and tidynames 
+
+* 0.1.6 2020-10-06 added makecanvas, makevx, makevy, circle, cart2pol, pol2cart, makerect, pythag, and plotoblong all from diagrams. These just make it slightly easier to plot diagrams within R.
