@@ -108,6 +108,24 @@ countgtOne <- function(invect) {
   return(length(pick1)/length(invect))
 }
 
+#' @title diagrams provides the syntax of functions for making diagrams
+#' 
+#' @description diagrams provides the syntax of functions for making diagrams
+#'
+#' @return nothing but it write syntax for diagram functions to the console
+#' @export
+#'
+#' @examples
+#' diagrams()
+diagrams <- function() {
+  cat('circle(origx = 50, origy = 50, radius = 10, col = 1, lwd = 1) \n')
+  cat('makecanvas(xstart = 0, xfinish = 100, ystart = 0, yfinish = 100) \n')
+  cat('makerect(left, xinc, top, yinc, linecol = "grey", lwd = 1) \n')
+  cat('makevx(init, inc) \n')
+  cat('makevy(init, inc) \n')
+  cat('plotoblong(x0, x1, y0, y1, border = 1, col = 0, lwd = 1)  \n')
+} # end of diagrams
+
 #' @title extractcode pulls out the r-code blocks from Rmd files
 #' 
 #' @description extractcode pulls out the r-code blocks from Rmd files and 
@@ -1602,7 +1620,8 @@ removeEmpty <- function(invect) {
 #'     as well as a mathjax script that will generate equation numbers for any
 #'     display equations in the document. This prints the css style code and
 #'     the mathjax script to the console from where it should be pasted into the
-#'     Rmd file immediately following the YAML header.
+#'     Rmd file immediately following the YAML header. It now contains font 
+#'     sizes for the h1 heaqder and the .inline and .display math classes
 #'
 #' @return nothing but it prints css style code and a mathjax script to the 
 #'     console
@@ -1624,7 +1643,9 @@ rmdcss <- function() {
       '}  \n')
   cat('h1 {  \n',
       '  font-size: 32px  \n',
-      '}  \n',
+      '}  \n')
+  cat('.inline{font-size: 15px; } \n',
+      '.display{font-size: 18px;} \n',
       '<','/style>  \n')
   cat('\n\n')
   cat('<script type="text/x-mathjax-config">  \n',

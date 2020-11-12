@@ -20,3 +20,6 @@ When conducting analyses using R there are functions I use all the time for plot
 * 0.1.5 2020-09-13 added plotnull and tidynames 
 
 * 0.1.6 2020-10-06 added makecanvas, makevx, makevy, circle, cart2pol, pol2cart, makerect, pythag, and plotoblong all from diagrams. These just make it slightly easier to plot diagrams within R.
+
+* 0.1.7 2020-11-12 added rmdcss, which simplifies setting up an HTML Rmd file
+

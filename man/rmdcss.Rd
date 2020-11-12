@@ -15,7 +15,8 @@ rmdcss generates some initial css style code for HTML Rmd files
     as well as a mathjax script that will generate equation numbers for any
     display equations in the document. This prints the css style code and
     the mathjax script to the console from where it should be pasted into the
-    Rmd file immediately following the YAML header.
+    Rmd file immediately following the YAML header. It now contains font 
+    sizes for the h1 heaqder and the .inline and .display math classes
 }
 \examples{
 rmdcss()
