@@ -202,7 +202,7 @@ freqMean <- function(values,infreqs) {
     nobs <- sum(infreqs,na.rm=T)
     sumX <- sum(values * infreqs,na.rm=T)
     av <- sumX/nobs
-    if (nobs > 1) {
+    if (length(infreqs[infreqs > 0.01]) > 1) {
       sumX2 <- sum(values * values * infreqs,na.rm=T)
       stdev <- sqrt((sumX2 - (sumX * sumX)/nobs)/(nobs-1))
     } else { stdev <- NA
@@ -1595,6 +1595,49 @@ removeEmpty <- function(invect) {
   tmp <- tmp[nchar(tmp) > 0]
   return(tmp)
 }
+
+#' @title rmdcss generates some initial css style code for HTML Rmd files
+#' 
+#' @description rmdcss generates some initial css style code for HTML Rmd files
+#'     as well as a mathjax script that will generate equation numbers for any
+#'     display equations in the document. This prints the css style code and
+#'     the mathjax script to the console from where it should be pasted into the
+#'     Rmd file immediately following the YAML header.
+#'
+#' @return nothing but it prints css style code and a mathjax script to the 
+#'     console
+#' @export
+#'
+#' @examples
+#' rmdcss()
+rmdcss <- function() {
+  cat('<style type="text/css"> \n',
+      '  body, td { \n',
+      '  font-size: 16px; \n',
+      '  font-family: "Times New Roman", Times, serif; \n',
+      '} \n')
+  cat('code.r{ \n',
+      '  font-size: 15px; \n',
+      '} \n')
+  cat('pre {  \n',
+      'font-size: 8px  \n',
+      '}  \n')
+  cat('h1 {  \n',
+      '  font-size: 32px  \n',
+      '}  \n',
+      '<','/style>  \n')
+  cat('\n\n')
+  cat('<script type="text/x-mathjax-config">  \n',
+      '  MathJax.Hub.Config({  \n',
+      '    TeX: {   \n',
+      '      equationNumbers: {   \n',
+      '        autoNumber: "all",  \n',
+      '        formatNumber: function (n) {return ',3.,'+n}  \n',
+      '      }  \n', 
+      '    }  \n',
+      '  });  \n',
+      '<','/script>  \n')
+} # end of rmdcss
 
 #' @title setpalette is a shortcut for altering the palette to R4
 #' 
