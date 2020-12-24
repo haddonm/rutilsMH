@@ -23,3 +23,4 @@ When conducting analyses using R there are functions I use all the time for plot
 
 * 0.1.7 2020-11-12 added rmdcss, which simplifies setting up an HTML Rmd file
 
+* 0.1.8 2020-12-24 just the latest version as placed on github.

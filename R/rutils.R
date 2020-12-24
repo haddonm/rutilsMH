@@ -971,6 +971,7 @@ cart2pol <- function(x){
 #' @param yinc top - yincdefines bottom edge of rectangle
 #' @param linecol colour of line. default="grey"
 #' @param lwd the width of the line, default=1
+#' @param col the fill colour of the polygon drawn. default=NULL so not filled
 #'
 #' @return a vector denoting the center (x,y) of the rectangle
 #' @export
@@ -980,8 +981,8 @@ cart2pol <- function(x){
 #'    canvas(ystart=50,yfinish=93.5)
 #'    makerect(left=2,xinc=27,top=90,yinc=6)
 #' }
-makerect <- function(left,xinc,top,yinc,linecol="grey",lwd=1) {
-  polygon(makevx(left,xinc),makevy(top,yinc),col=0,
+makerect <- function(left,xinc,top,yinc,linecol="grey",lwd=1,col=NULL) {
+  polygon(makevx(left,xinc),makevy(top,yinc),col=col,
           lwd=lwd,border=linecol)
   centerx <- (left * 2 + xinc)/2
   centery <- (top * 2 - yinc)/2

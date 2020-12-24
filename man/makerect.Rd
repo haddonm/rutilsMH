@@ -4,7 +4,7 @@
 \alias{makerect}
 \title{makerect draws a rectangle once a plot is available}
 \usage{
-makerect(left, xinc, top, yinc, linecol = "grey", lwd = 1)
+makerect(left, xinc, top, yinc, linecol = "grey", lwd = 1, col = NULL)
 }
 \arguments{
 \item{left}{defines lefthand edge of rectangle}
@@ -18,6 +18,8 @@ makerect(left, xinc, top, yinc, linecol = "grey", lwd = 1)
 \item{linecol}{colour of line. default="grey"}
 
 \item{lwd}{the width of the line, default=1}
+
+\item{col}{the fill colour of the polygon drawn. default=NULL so not filled}
 }
 \value{
 a vector denoting the center (x,y) of the rectangle
