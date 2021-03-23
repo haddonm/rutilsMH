@@ -126,9 +126,9 @@ diagrams <- function() {
   cat('plotoblong(x0, x1, y0, y1, border = 1, col = 0, lwd = 1)  \n')
 } # end of diagrams
 
-#' @title extractcode pulls out the r-code blocks from Rmd files
+#' @title extractRcode pulls out the r-code blocks from Rmd files
 #' 
-#' @description extractcode pulls out the r-code blocks from Rmd files and 
+#' @description extractRcode pulls out the r-code blocks from Rmd files and 
 #'     saves them into a separate R file. 
 #'
 #' @param indir the directory in which the rmd file is to be found and into
@@ -141,7 +141,7 @@ diagrams <- function() {
 #'
 #' @examples
 #' print("wait on a real example")
-extractcode <- function(indir,rmdfile,filename="out.R") { # indir=indir; rmdfile=inrmd; filename="out.R"
+extractRcode <- function(indir,rmdfile,filename="out.R") { # indir=indir; rmdfile=inrmd; filename="out.R"
   infile <- paste0(indir,"/",rmdfile)
   fileout <- paste0(indir,"/",filename)
   cat("# R-code from the file ",rmdfile,"\n\n",file=fileout,append=FALSE)
@@ -157,7 +157,7 @@ extractcode <- function(indir,rmdfile,filename="out.R") { # indir=indir; rmdfile
     }
     cat("#",txt[finish],"\n\n\n\n",file=fileout,append=TRUE)
   }
-} # end of extractcode
+} # end of extractRcode
 
 #' @title facttonum converts a vector of numeric factors into numbers
 #'
@@ -363,6 +363,34 @@ getnamespace <- function(fun) {
   envs <- c(lapply(nss,.getNamespace))
   return(nss[vapply(envs, function(env) exists(fun, env, inherits = FALSE),logical(1))])
 } # end of get_namespace
+
+#' @title getparplots selects the par(plots()) rows and columns for plots
+#'
+#' @description getparplots selects the rows and columns used by
+#'     par(plots(rows,columns)). This is required when generating plots under
+#'     conditions where it is not know how many plots will be required when
+#'     writing the plot.function. Currently the maximum is limited to 25 plots
+#'
+#' @param nplots the number of plots to generate in one plot. This has a maximum
+#'     value of 25. If getparplots is used with nplots > 25 it will stop after
+#'     throwing an error message.
+#'
+#' @return a vector of 2, the rows and columns for the par(plots)
+#' @export
+#'
+#' @examples
+#' getparplots(12)
+#' getparplots(13)
+getparplots <- function(nplots) {
+  dat <- c(1,1,2,1,2,2,2,2,3,2,3,2,4,2,4,2,3,3,5,2,4,3,4,3,5,3,5,3,5,3,
+           4,4,6,3,6,3,7,3,7,3,7,3,6,4,6,4,6,4,5,5)
+  nbits <- length(dat)/2
+  if (nplots > nbits)
+    stop(cat("getparplots currently only allows for ",nbits," plots \n"))
+  ans <- matrix(dat,nrow=nbits,ncol=2,byrow=TRUE,
+                dimnames=list(1:nbits,c("rows","cols")))
+  return(ans[nplots,])
+} # end of getparplots
 
 #' @title getseed generates a random number seed
 #' 
