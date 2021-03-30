@@ -1267,6 +1267,8 @@ outfit <- function(inopt,backtran=TRUE,digits=5,title="",
 #'     but leaves plenty of room for titles
 #' @param byrow should plots be made by row (mfrow; byrow=TRUE, the default),
 #'     of by column (mfcol; byrow=FALSE)
+#' @param ... the generic ellipsis allowing for the includion of other graphics
+#'     arguments such as xaxs="n", etc.
 #'
 #' @return nothing but it changes the base graphics par settings
 #' @export
@@ -1277,14 +1279,14 @@ outfit <- function(inopt,backtran=TRUE,digits=5,title="",
 #' parsyn()
 #' }
 parset <- function(plots=c(1,1),cex=0.75,font=7,outmargin=c(0,0,0,0),
-                   margin=c(0.45,0.45,0.05,0.05),byrow=TRUE) {
+                   margin=c(0.45,0.45,0.05,0.05),byrow=TRUE,...) {
   if (byrow) {
     par(mfrow=plots,mai=margin,oma=outmargin)
   } else {
     par(mfcol=plots,mai=margin,oma=outmargin)
   }
   par(cex=cex, mgp=c(1.35,0.35,0), font.axis=font,font=font,
-      font.lab=font)
+      font.lab=font,...)
 } # end of parset
 
 #' @title parsyn types standard syntax for the par command to the console
@@ -1930,6 +1932,31 @@ which.closest <- function(x,invect,index=T) {
     return(invect[pick])
   }
 } # end of which_.closest
+
+#' @title wtedmean calculates the weighted mean of a set of values and weights
+#'
+#' @description wtedmean solves the problem of calculating a weighted mean
+#'     value from a set of values with different weights. Within the aMSE this
+#'     is common when trying to summarize across populations within an SAU or
+#'     summarize SAU within a zone by finding a mean value weighted by the
+#'     respective catch from each related population or SAU.
+#'
+#' @param x the values whose weighted mean is wanted
+#' @param wts the weights to use, often a set of catches
+#'
+#' @return a single real number
+#' @export
+#'
+#' @examples
+#' saucpue <- c(91.0,85.5,88.4,95.2)
+#' saucatch <- c(42.0,102.3,75.0,112.0)
+#' wtedmean(saucpue,saucatch)
+#' saucatch/sum(saucatch)  # the relative weights
+wtedmean <- function(x,wts) {
+  pwts <- wts/sum(wts,na.rm=TRUE)
+  ans <- sum((x * pwts),na.rm=TRUE)
+  return(ans)
+} # end of wtedmean
 
 #' @title '\%ni\%' identifies which element in x is NOT in y
 #'
