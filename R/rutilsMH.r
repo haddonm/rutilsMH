@@ -42,6 +42,6 @@ NULL
 
 #' @importFrom grDevices dev.cur dev.new dev.off png palette
 #' @importFrom graphics par grid plot axis mtext polygon title hist lines text
-#' @importFrom utils tail head str write.table
+#' @importFrom utils tail head str write.table write.csv
 #' @importFrom stats quantile loess sd 
 NULL

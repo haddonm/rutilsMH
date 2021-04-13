@@ -108,6 +108,53 @@ countgtOne <- function(invect) {
   return(length(pick1)/length(invect))
 }
 
+#' @title describefunctions lists all R functions in a set of files
+#' 
+#' @description describefunctions lists all the R functions in a set of R files
+#'     along with their syntax, the linenumber in each file, the filename, the
+#'     function name, and the functions within the set of R files that each 
+#'     function calls. In addition, there is now a crossreference column,
+#'     which identifies which functions call each function
+#'
+#' @param indir the directory in which to find the R files
+#' @param files a vector of filenames, as character, within which to search for 
+#'     functions
+#' @param outfile the full path and name of the CSV file to which the results 
+#'     should be saved. default="", which means the output will only be 
+#'     returned invisibly. If outfile has a fullpath csv filename then it will
+#'     also be written to that file as well as retunred invisibly
+#'
+#' @return It can produce a csv file but also returns the results invisibly 
+#' @export
+#'
+#' @examples
+#' print ("wait on suitable data")
+describefunctions <- function(indir,files,outfile="") {
+  nfiles <- length(files)
+  allfiles <- NULL
+  for (i in 1:nfiles)
+    allfiles <- rbind(allfiles,listfuns(paste0(indir,files[i])))
+  allfilesort <- allfiles[order(allfiles[,"function"]),]
+  allrefs <- NULL
+  for (i in 1:nfiles)
+    allrefs <- rbind(allrefs,findfuns(paste0(indir,files[i]),
+                                      allfilesort[,"function"]))
+  allfiles[,"references"] <- allrefs
+  x <- allfiles[order(allfiles[,"function"]),]
+  x[,"crossreference"] <- ""
+  nfun <- nrow(x)
+  for (i in 1:nfun) {
+    pickf <- grep(x[i,"function"],x[,"references"])
+    if (length(pickf) > 0) {
+      if (length(pickf) == 1) x[i,"crossreference"] <- x[pickf,"function"]
+    } else {
+      x[i,"crossreference"] <- paste0(x[pickf,"function"],collapse=", ")
+    }
+  }
+  if (nchar(outfile) > 5) write.csv(x,file = outfile)
+  return(invisible(x))
+} # end of describefunctions
+
 #' @title diagrams provides the syntax of functions for making diagrams
 #' 
 #' @description diagrams provides the syntax of functions for making diagrams
@@ -190,6 +237,68 @@ facttonum <- function(invect){
     warning("NAs produced, input vector may have non-numbers present \n")
   return(outvect)
 } # end of facttonum
+
+#' @title findfuns finds references to other functions within other functions
+#' 
+#' @description findfuns is used when developing a complex project containing 
+#'     many R files, each containing many R functions. Given a file that 
+#'     contains a set of functions (infile) and a data.frame of all functions  
+#'     from the project (allfuns), which is obtained using listfuns, then 
+#'     findfuns searches each function for references to any of the projects
+#'     functions. This allows them to be cross referenced
+#'
+#' @param infile the filename of the R file within which to search for the 
+#'     functions listed in the allfuns data.frame derived from the listfuns
+#'     function
+#' @param allfuns a data.frame of functions and their properties listed in 
+#'     the order of the sorted function names in the 'function' column 
+#'
+#' @return the same data.frame except that the references column will have been
+#'     populated
+#'
+#' @examples
+#' print("wait on suitable data-set")
+findfuns <- function(infile,allfuns) {
+  numfun <- length(allfuns)
+  content <- readLines(con=infile)
+  rfun <- tail(unlist(strsplit(infile,"/")),1)
+  rfile <- substr(rfun,1,nchar(rfun)-2)
+  funLines <- grep("function",content)
+  titles <- grep("@title",content)
+  testhash <- substr(content[funLines],1,4)
+  omit <- grep("#",testhash)
+  if (length(omit) > 0) {
+    funLines <- funLines[-omit]
+    testhash <- testhash[-omit]
+  }
+  omit2 <- grep("  ",testhash) # remove functions internal to other functions
+  if (length(omit2) > 0) funLines <- funLines[-omit2]
+  nfun <- length(funLines)
+  outf <- as.data.frame(matrix("",nrow=nfun,ncol=1))
+  bounds <- matrix(0,nrow=nfun,ncol=2,
+                   dimnames=list(paste0(rfile,1:nfun),c("start","end")))
+  bounds[,1] <- funLines + 1
+  if (nfun > 1) {
+    bounds[,2] <- c((titles[2:nfun] - 2),length(content))
+  } else {
+    bounds[,2] <- length(content)
+  }
+  for (i in 1:nfun) { # i=1
+    funname <- removeEmpty(unlist(strsplit(content[funLines[i]],"<-"))[1])
+    funcont <- content[bounds[i,1]:bounds[i,2]]
+    testhash <- substr(funcont,1,5)
+    omit <- grep("#",testhash)
+    if (length(omit) > 0) funcont <- funcont[-omit]
+    whichfun <- ", "
+    for (j in 1:numfun) {  #  j = 65
+      if (allfuns[j] != funname)
+        if (length(grep(allfuns[j],funcont)) > 0)
+          whichfun <- paste0(whichfun,allfuns[j],", ")
+    }
+    outf[i,] <- whichfun
+  }
+  return(outf)
+} # end of findfuns
 
 #' @title freqMean calculates the mean and stdev of count data
 #'
@@ -785,30 +894,35 @@ lininterpol <- function(invect) {
   return(answer)
 }  # end of lin_interpol
 
-#' @title listFunctions: Lists all the functions in the R infile
+#' @title listfuns produces a listing of all functions in an input R file
 #'
-#' @description listFunctions: Lists all the functions in the R infile
-#' @param infile - a character variable containing the filename for parsing
-#' @param console logical determining whether to print directly to the 
-#'     screen the default = TRUE
-#' @return Generates text listing all functions but also outputs invisibly
-#'     a list of the functions and syntax, and separately the function names
+#' @description listfuns reads in a given R file and then identifies each
+#'     function header within it and pulls out the function name, its syntax,
+#'     the line-number in the file, and associates that with the filename.
 #'
-#' @export listFunctions
+#' @param infile the R file to be examined
+#'
+#' @return a data.frame of syntax, function name, line number, and file name
+#'
 #' @examples
-#' \dontrun{
-#' txt <- vector("character",5)
-#' txt[1] <- "But an ordinary line of text should be ignored - 1"
-#' txt[2] <- "The term function on its own should be ignored"
-#' txt[3] <- "Also any line with phrase: '<- function', should be detected"
-#' txt[4] <- "But an ordinary line of text should be ignored - 2"
-#' txt[5] <- "But an ordinary line of text should be ignored - 3"
-#' infile <- textConnection(txt)
-#' listFunctions(infile)
-#' }
-listFunctions <- function(infile,console=TRUE) { # infile=filename
+#' print("wait for an example")
+listfuns <- function(infile) { # infile=filename; console=FALSE
   content <- readLines(con=infile)
+  if (length(grep("/",infile) > 0)) {
+    rfun <- tail(unlist(strsplit(infile,"/")),1)
+    rfile <- substr(rfun,1,nchar(rfun)-2)
+  } else {
+    rfile <- infile
+  }
   funLines <- grep("function",content)
+  testhash <- substr(content[funLines],1,4)
+  omit <- grep("#",testhash)
+  if (length(omit) > 0) {
+    funLines <- funLines[-omit]
+    testhash <- testhash[-omit]
+  }
+  omit2 <- grep("  ",testhash) # remove functions internal to other functions
+  if (length(omit2) > 0) funLines <- funLines[-omit2]
   nLine <- length(funLines)
   delF <- NULL
   for (i in 1:nLine) {
@@ -832,19 +946,23 @@ listFunctions <- function(infile,console=TRUE) { # infile=filename
     funnames <- out
     n <- length(out)
     for (i in 1:n) {  # i=1
-      out[i] <- unlist(strsplit(out[i],"#"))[1]
+      out[i] <- gsub(" ","",(unlist(strsplit(out[i],"\\{")))[1])
       funnames[i] <- removeEmpty(unlist(strsplit(out[i],"<-"))[1])
-      if (console) {
-        if (nchar(out[i]) == 2) {
-          cat("\n")
-        } else {
-          cat(outlines[i],out[i],"\n")
-        }
-      }
+      out[i] <- gsub("<-function","",out[i])
     }
+    columns <- c("syntax","linenumber","file","function","references")
+    rows <- paste0(rfile,1:n)
+    outfuns <- as.data.frame(matrix(NA,nrow=n,ncol=length(columns),
+                                    dimnames=list(rows,columns)))
+    outfuns[,"syntax"] <- out
+    outfuns[,"function"] <- funnames
+    outfuns[,"linenumber"] <- funLines
+    outfuns[,"file"] <- rfile
   }
-  return(invisible(list(functions=out,funnames=funnames,funlines=funLines)))
-} # end of list_Functions
+  outfuns
+  return(outfuns)
+} # end of listfuns
+
 
 #' @title magnitude returns the magnitude of numbers
 #'
