@@ -4,9 +4,12 @@
 \alias{findfuns}
 \title{findfuns finds references to other functions within other functions}
 \usage{
-findfuns(infile, allfuns)
+findfuns(indir, infile, allfuns)
 }
 \arguments{
+\item{indir}{the directory in which the file identified in 'infile' is
+located}
+
 \item{infile}{the filename of the R file within which to search for the 
 functions listed in the allfuns data.frame derived from the listfuns
 function}

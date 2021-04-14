@@ -4,13 +4,13 @@
 \alias{describefunctions}
 \title{describefunctions lists all R functions in a set of files}
 \usage{
-describefunctions(indir, files, outfile = "")
+describefunctions(indir, files = "", outfile = "")
 }
 \arguments{
 \item{indir}{the directory in which to find the R files}
 
 \item{files}{a vector of filenames, as character, within which to search for 
-functions}
+functions, default="", which means all R files in indir will be used}
 
 \item{outfile}{the full path and name of the CSV file to which the results 
 should be saved. default="", which means the output will only be 
@@ -25,8 +25,11 @@ describefunctions lists all the R functions in a set of R files
     along with their syntax, the linenumber in each file, the filename, the
     function name, and the functions within the set of R files that each 
     function calls. In addition, there is now a crossreference column,
-    which identifies which functions call each function
+    which identifies which functions call each function. If just the indir
+    is provided then all R files in that directory will be examined. .Rmd
+    files will not be considered but any other file type starting with .R
+    may cause trouble until I find a fix!
 }
 \examples{
-print ("wait on suitable data")
+print ("wait on suitable data") # indir=ddir; files=""; outfile=""
 }
