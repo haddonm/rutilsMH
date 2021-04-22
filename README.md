@@ -11,6 +11,8 @@ Contains a set of functions I use all the time when using R
 
 When conducting analyses using R there are functions I use all the time for plotting, within apply functions, and others. To simplify their use I have put  together this small package, which I can call whenever I use one of my other packages.
 
+* 0.1.13 2021-04-22 Added pickbound to automate the selection of par(plots=c(?,?)).
+
 * 0.1.13 2021-04-21 Added str1 and str2 to speed the typing of str(x,max.level=1/2). This is obviously a minor addition but, for me, avoids making typos when explore the contents of relatively complex objects.
 
 * 0.1.11 2021-04-13 now contains describefunctions which lists the R functions within each file of a given list of R files
