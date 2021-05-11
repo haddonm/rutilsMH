@@ -808,7 +808,7 @@ inthist <- function(x,col=1,border=NULL,width=0.9,xlabel="",ylabel="",
     rownames(answer) <- values
     colnames(answer) <- c("values","counts","propcounts")
   } else { answer <- NA  }
-  class(answer) <- "inthist"
+  class(answer) <- c("matrix","inthist")
   return(invisible(answer))
 }  # end of inthist
 
