@@ -196,6 +196,47 @@ diagrams <- function() {
   cat('plotoblong(x0, x1, y0, y1, border = 1, col = 0, lwd = 1)  \n')
 } # end of diagrams
 
+#' @title digitsbyrow a helper function for knitr, to specify formats by row
+#'
+#' @description digitsbyrow is a solution obtained from StackOverFlow, sugegsted
+#'     by Tim Bainbridge in 11/12/19. knitr formats table columns as a whole,
+#'     which can be a problem if one wants to mix integers with real numbers in
+#'     the same columns. This first transposes the data.frame/matrix being
+#'     printed, fixes the formats, and then transposes it back. In knitr one
+#'     then needs to use the align argument to fix the alignment. In may version
+#'     I have conserved both rownames and colnames for both data.frames and
+#'     matrices (the original only did so for data.frames but I often print
+#'     matrices). digitsbyrow converts all entries to character so knitr becomes
+#'     necessary for printing.
+#'
+#' @param df the data.frame or matrix to be printed by knitr
+#' @param digits a vector of the digits wanted for each row of the df or matrix
+#'
+#' @return a formatted data.frame or matrix depending on input
+#' @export
+#'
+#' @examples
+#' x <- matrix(c(rnorm(5,mean=5,sd=1),seq(1,10,1)),nrow=3,ncol=5,byrow=TRUE,
+#'             dimnames=list(1:3,1:5))
+#' digitsbyrow(x, c(3,0,0))
+#' # needs knitr to use kable
+#' # kable(digitsbyrow(x, c(3,0,0)),align='r',row.names=TRUE)
+digitsbyrow <- function(df, digits) {
+  tmp0 <- data.frame(t(df))
+  tmp1 <- mapply(
+    function(df0, digits0) {
+      formatC(df0, format="f", digits=digits0)
+    },
+    df0=tmp0, digits0=digits
+  )
+  tmp1 <- data.frame(t(tmp1))
+  rownames(tmp1) <- rownames(df)
+  colnames(tmp1) <- colnames(df)
+  if (class(df)[1] == "matrix") tmp1 <- as.matrix(tmp1)
+  return(tmp1)
+} # end of digitsbyrow
+
+
 #' @title extractRcode pulls out the r-code blocks from Rmd files
 #' 
 #' @description extractRcode pulls out the r-code blocks from Rmd files and 
