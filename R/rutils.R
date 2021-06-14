@@ -1859,6 +1859,28 @@ removeEmpty <- function(invect) {
   return(tmp)
 }
 
+#' @title revsum generates a vector of the cumulative sum from n to 1 
+#'
+#' @description revsum generates a vector of the cumulative sum of an input
+#'     vector from n to 1 rather than from 1 - n, as in cumsum.
+#' 
+#' @param x an input vector
+#'
+#' @return a vector of cumulative values from n to 2
+#' @export
+#'
+#' @examples
+#' x <- c(1,2,3,4,5)/15
+#' print(round(cbind(x,cumsum(x),revsum(x)),3))
+revsum <- function(x) {
+  n <- length(x)
+  if (n < 2) warning("Input vector in revsum less than length 2.  \n")
+  ans <- numeric(n)
+  ans[n] <- x[n]
+  for (i in (n-1):1) ans[i] <- ans[i+1] + x[i] 
+  return(ans)
+} # end of revsum
+
 #' @title rmdcss generates some initial css style code for HTML Rmd files
 #' 
 #' @description rmdcss generates some initial css style code for HTML Rmd files
