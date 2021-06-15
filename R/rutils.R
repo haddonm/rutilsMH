@@ -853,6 +853,65 @@ inthist <- function(x,col=1,border=NULL,width=0.9,xlabel="",ylabel="",
   return(invisible(answer))
 }  # end of inthist
 
+#' @title kablerow a replacement for knitr::kable which enables row formatting
+#'
+#' @description knitr::kable enables one to round the number of digits for each
+#'     column of a table. However, sometimes one wants to format the rows and
+#'     not the columns. kablerow enables that while using the kable function.
+#'     It rounds the rows to the desired number of digits and then converts
+#'     those rounded values to characters, which kable can then print more
+#'     appropriately.
+#'
+#' @param x an input matrix or data.frame
+#' @param rowdigits the number of digits desired for each row
+#' @param namerows should row.names be printed; default=NA. change to TRUE for
+#'     row.names printing
+#' @param namecols should col.names be printed; default=NA (which prints V1, V2
+#'     ,V3, ...)
+#'
+#' @return Nothing but it does use knitr::kable to print a formatted matrix
+#' @export
+#'
+#' @examples
+#' x <- matrix(rnorm(25,mean=5,sd=1),nrow=5,ncol=5)
+#' colnames(x) <- 1:5
+#' numdig <- c(2,3,4,3,2)
+#' rownames(x) <- c("a","b","c","d","e")
+#' kablerow(x,rowdigits=c(2,3,4,3,2),namerows=TRUE)
+kablerow <- function(x,rowdigits,namerows=NA,namecols=NA) { # x=x; rowdigits=c(2,3,4,3,2); namerows=FALSE
+  xr <- as.data.frame(x)
+  num <- nrow(x)
+  for (i in 1:num) {
+    x[i,] <- round(x[i,],rowdigits[i])
+    xr[i,] <- as.character(x[i,])
+  }
+  kable(xr,align="r",row.names=namerows,col.names=namecols)
+} # end of kablerow
+
+#' @title linept adds a line and a series of points to a plot
+#' 
+#' @description linept adds both a line and a series of points to a plot but
+#'     without the gaps introduced in the line when using type='b' within the
+#'     base R lines function. This is simply a format issue as I do not like 
+#'     those gaps
+#'
+#' @param x the x series of points
+#' @param y the corresponding y series of points
+#' @param lwd the line width, default=1
+#' @param pch the character used, default = 16 (a large dot)
+#' @param ... and other graphics arguments typically used with either lines or
+#'     points
+#'
+#' @return nothing but it does add a pointed line to a plot
+#' @export
+#'
+#' @examples
+#' print("wait on example data")
+linept <- function(x,y,lwd=1,pch=16,...) {
+  lines(x,y,lwd=lwd,...)
+  points(x,y,pch=pch,...)
+}
+
 #' @title listExamples lists all the examples in a package R file
 #'
 #' @description listExamples lists all the examples in a package R file. It

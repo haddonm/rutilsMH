@@ -11,6 +11,8 @@ Contains a set of functions I use all the time when using R
 
 When conducting analyses using R there are functions I use all the time for plotting, within apply functions, and others. To simplify their use I have put  together this small package, which I can call whenever I use one of my other packages.
 
+* 0.1.18 2021-06-15 Included kablenow (row formatted tables) and linept (linepoint).
+
 * 0.1.17 2021-06-14 Included revsum to allow for reverse cumulative sums as a contrast to cumsum
 
 * 0.1.16 2021_05-28 Not sure what happened to earlier updates, but here I have added digitsbyrow, a helper function for knitr.
