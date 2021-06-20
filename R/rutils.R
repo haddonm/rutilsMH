@@ -131,7 +131,24 @@ countgtOne <- function(invect) {
 #' @export
 #'
 #' @examples
-#' print ("wait on suitable data") # indir=ddir; files=""; outfile=""
+#' filen <- tempfile("test",fileext=".R")
+#' txt <- c("# this is a comment",
+#'  "#' @title ...",
+#'  "dummy <- function() {",
+#'  "  out <- anotherdummy()",
+#'  "  return(out)",
+#'  "}",
+#'  "# a possibly confusing use of function",
+#'  "#' @title ...",
+#'  "anotherdummy <- function() {",
+#'  "  return(NULL)",
+#'  "}",
+#'  "  ")
+#'  write(txt,file=filen)
+#'  usedir <- paste0(tempdir(),"//")
+#'  filename <- tail(unlist(strsplit(filen,"\\",fixed=TRUE)),1)
+#'  x <- describefunctions(indir=usedir,files=filename,outfile="")
+#'  x
 describefunctions <- function(indir,files="",outfile="") {
   if (nchar(files[1]) == 0) {
     dirfiles <- dir(indir)
@@ -148,30 +165,30 @@ describefunctions <- function(indir,files="",outfile="") {
     if (nrow(outfuns) > 1) {
       numfuns[i,1] <- nrow(outfuns)
     } else {
-      if (nchar(outfuns[1,"function"]) > 0) numfuns[i,11] <- 1
+      if (nchar(outfuns[1,"functions"]) > 0) numfuns[i,11] <- 1
     }
     allfiles <- rbind(allfiles,outfuns)
   }
-  allfilesort <- allfiles[order(allfiles[,"function"]),]
+  allfilesort <- allfiles[order(allfiles[,"functions"]),]
   allrefs <- matrix(0,nrow=0,ncol=1)
   for (i in 1:nfiles) {# i = 2
     if (numfuns[i] > 0) {
        allrefs <- rbind(allrefs,findfuns(indir,files[i],
-                                         allfilesort[,"function"]))
+                                         allfilesort[,"functions"]))
     } else {
       allrefs <- rbind(allrefs,", , ")
     }
   }
   allfiles[,"references"] <- allrefs
-  x <- allfiles[order(allfiles[,"function"]),]
+  x <- allfiles[order(allfiles[,"functions"]),]
   x[,"crossreference"] <- ""
   nfun <- nrow(x)
   for (i in 1:nfun) {
-    pickf <- grep(x[i,"function"],x[,"references"])
+    pickf <- grep(x[i,"functions"],x[,"references"])
     if (length(pickf) > 0) {
-      if (length(pickf) == 1) x[i,"crossreference"] <- x[pickf,"function"]
+      if (length(pickf) == 1) x[i,"crossreference"] <- x[pickf,"functions"]
     } else {
-      x[i,"crossreference"] <- paste0(x[pickf,"function"],collapse=", ")
+      x[i,"crossreference"] <- paste0(x[pickf,"functions"],collapse=", ")
     }
   }
   if (nchar(outfile) > 5) write.csv(x,file = outfile)
@@ -235,6 +252,70 @@ digitsbyrow <- function(df, digits) {
   if (class(df)[1] == "matrix") tmp1 <- as.matrix(tmp1)
   return(tmp1)
 } # end of digitsbyrow
+
+
+
+#' @title extractpathway traces the sequence of functions calls within a function
+#'
+#' @description extractpathway is used when documenting the sequence of function
+#'     calls within a set of functions within a package one is developing. It
+#'     needs to know the location of the R directory (indir) for the package,
+#'     the starting functions at the beginning of a particular algorithm, and
+#'     a listing from the rutilsMH function describefunctions. Then it traces
+#'     the sequential usage of all known package functions, ignoring base R
+#'     functions. The final output is a vector of function names, starting with
+#'     the top-level function.
+#'
+#' @param indir the R directory within an R package being documented
+#' @param infun the name of the top-level function whose sequential function use
+#'     is being explored
+#' @param allfuns the output of applying readLines to a text file containing
+#'     R code.
+#'
+#' @return a vector of function names in the sequence in which they are used
+#'     within the first names function
+#' @export
+#'
+#' @examples
+#' print("Wait on complex use of tempDir; see describefunctions for an example")
+extractpathway <- function(indir,infun,allfuns) {  #  indir=tempdir(),infun="dummy",allfuns=x
+  functions <- allfuns[,"functions"]
+  pickrow <- which(functions == infun)
+  if (length(pickrow) == 0)
+    stop("Input function to extractpathway, not in allfuns. /n")
+  rfile <- allfuns[pickrow,"file"]
+  infile <- paste0(indir,rfile,".R")
+  solution <- infun
+  content <- readLines(con=infile)
+  funLines <- identifyfuns(content=content)
+  begin <- grep(paste0(infun," <- function"),content)
+  finish <- funLines[which(funLines == begin) + 1] - 1
+  funcont <- content[(begin+1):finish]
+  testhash <- substr(funcont,1,4)
+  omit <- grep("#",testhash)
+  if (length(omit > 0)) funcont <- funcont[-omit]
+  funcont <- removeEmpty(funcont)
+  nline <- length(funcont)
+  for (i in 1:nline) { #   i =2
+    txt <-  removeEmpty(unlist(strsplit(funcont[i],split=character(0))))
+    bracket <- match("(",txt)
+    if (!is.na(bracket)) {
+      loc2 <- match("(",txt)[1] - 1 # get end of object name
+      loc1 <- grep("<",txt) + 2        # get putative start of object name
+      if (length(loc1) == 0) {
+        fun <- paste0(txt[1:loc2],collapse="")
+      } else {
+        if (loc1 > loc2) {
+          fun <- paste0(txt[1:loc2],collapse="")
+        } else {
+          fun <- paste0(txt[loc1:loc2],collapse="")
+        }
+      }
+      if (fun %in% functions) solution <- c(solution,fun)
+    }
+  }
+  return(unique(solution))
+} # end of extractpathway
 
 
 #' @title extractRcode pulls out the r-code blocks from Rmd files
@@ -325,7 +406,7 @@ facttonum <- function(invect){
 #' @examples
 #' print("wait on suitable data-set")
 findfuns <- function(indir,infile,allfuns) { 
-  # indir=indir;infile=files[1]; allfuns=allfilesort[,c(,"function")]
+  # indir=indir;infile=files[1]; allfuns=allfilesort[,"functions"]
   infile <- file.path(indir,infile)
   numfun <- length(allfuns)
   content <- readLines(con=infile)
@@ -721,6 +802,43 @@ halftable <- function(inmat,yearcol="Year",subdiv=3) {
   return(outmat)
 } # end of halftable
 
+#' @title identifyfuns uses text from readLines to identify function beginnings
+#' 
+#' @description identifyfuns is used when tracing the interactions between 
+#'     functions within R packages. It uses the vector of character vectors
+#'     that is produced by readLines and identifies the starting lines of all
+#'     functions. It ignores all functions defined within comments, as well as
+#'     ignoring all functions defined internally to other functions. It does the
+#'     latter by testing for a couple of spaces at the start of a line 
+#'     containing a function definition, which functions defined within another
+#'     function should have.
+#'
+#' @param content the output of applying readLines to a text file containing 
+#'     R code.
+#'
+#' @return a vector of line numbers identifying the start of all functions 
+#'     within the content. This may be a vector of zero length if there are no
+#'     functions.
+#' @export
+#'
+#' @examples
+#' txt <- c("# this is a comment",
+#' "dummy <- function() { return(NULL) }",
+#' "# a possibly confusing use of function",
+#' "anotherdummy <- function() { return(NULL) }")
+#' identifyfuns(txt)
+identifyfuns <- function(content) {
+  funLines <- grep("function",content)
+  testhash <- substr(content[funLines],1,4)
+  omit <- grep("#",testhash)
+  if (length(omit) > 0) {
+    funLines <- funLines[-omit]
+    testhash <- testhash[-omit]
+  }
+  omit2 <- grep("  ",testhash) # remove functions internal to other functions
+  if (length(omit2) > 0) funLines <- funLines[-omit2]
+  return(funLines)
+} # end of identifyfuns
 
 info <- function(invar) {
   cat("Class: ",class(invar),"\n")
@@ -1083,12 +1201,12 @@ listfuns <- function(infile) { # infile=paste0(ddir,filen[1]);
       out[i] <- gsub("<-function","",out[i])
     }
   }
-  columns <- c("syntax","linenumber","file","function","references")
+  columns <- c("syntax","linenumber","file","functions","references")
   rows <- paste0(rfile,1:n)
   outfuns <- as.data.frame(matrix(NA,nrow=n,ncol=length(columns),
                                   dimnames=list(rows,columns)))
   outfuns[,"syntax"] <- out
-  outfuns[,"function"] <- funnames
+  outfuns[,"functions"] <- funnames
   outfuns[,"linenumber"] <- funLines
   outfuns[,"file"] <- rfile
   return(outfuns)
@@ -1648,7 +1766,7 @@ plot1 <- function(x,y,xlab="",ylab="",type="l",usefont=7,cex=0.75,
         font = usefont, font.lab = usefont)
   }
   if (maxy > 0) ymax <- maxy  else ymax <- getmax(y)
-  if (min(y,na.rm=TRUE) < 0.0) ymin[1] <- getmin(y) else ymin <- 0.0
+  if (min(y,na.rm=TRUE) < 0.0) ymin <- getmin(y) else ymin <- 0.0
   plot(x,y,type=type,ylim=c(ymin,ymax),yaxs="i",
        ylab=ylab,xlab=xlab,cex=cex,panel.first=grid(),...)
 } # end of plot1

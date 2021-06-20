@@ -31,5 +31,22 @@ describefunctions lists all the R functions in a set of R files
     may cause trouble until I find a fix!
 }
 \examples{
-print ("wait on suitable data") # indir=ddir; files=""; outfile=""
+filen <- tempfile("test",fileext=".R")
+txt <- c("# this is a comment",
+ "#' @title ...",
+ "dummy <- function() {",
+ "  out <- anotherdummy()",
+ "  return(out)",
+ "}",
+ "# a possibly confusing use of function",
+ "#' @title ...",
+ "anotherdummy <- function() {",
+ "  return(NULL)",
+ "}",
+ "  ")
+ write(txt,file=filen)
+ usedir <- paste0(tempdir(),"//")
+ filename <- tail(unlist(strsplit(filen,"\\\\",fixed=TRUE)),1)
+ x <- describefunctions(indir=usedir,files=filename,outfile="")
+ x
 }
