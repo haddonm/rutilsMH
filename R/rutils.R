@@ -171,7 +171,7 @@ describefunctions <- function(indir,files="",outfile="") {
   }
   allfilesort <- allfiles[order(allfiles[,"functions"]),]
   allrefs <- matrix(0,nrow=0,ncol=1)
-  for (i in 1:nfiles) {# i = 2
+  for (i in 1:nfiles) {# i = 1
     if (numfuns[i] > 0) {
        allrefs <- rbind(allrefs,findfuns(indir,files[i],
                                          allfilesort[,"functions"]))
@@ -402,11 +402,12 @@ facttonum <- function(invect){
 #'
 #' @return the same data.frame except that the references column will have been
 #'     populated
+#' @export
 #'
 #' @examples
 #' print("wait on suitable data-set")
-findfuns <- function(indir,infile,allfuns) { 
-  # indir=indir;infile=files[1]; allfuns=allfilesort[,"functions"]
+findfuns <- function(indir,infile,allfuns) { # indir=indir;infile=files[i]; allfuns=allfilesort[,"functions"]
+  # indir=ddir;infile=files[1]; allfuns=allfilesort[,"functions"]
   infile <- file.path(indir,infile)
   numfun <- length(allfuns)
   content <- readLines(con=infile)
@@ -1148,6 +1149,7 @@ lininterpol <- function(invect) {
 #' @param infile the R file to be examined
 #'
 #' @return a data.frame of syntax, function name, line number, and file name
+#' @export
 #'
 #' @examples
 #' print("wait for an example")
@@ -2185,6 +2187,62 @@ setplot <- function() {
   cat('#graphics.off() \n')
 } # end of set_plot
 
+#' @title setuprmd sets up and Rmd file ready to generate an HTML file
+#' 
+#' @description setuprmd sets up a custom Rmd file for generating an HTML file,
+#'     which better suits my own preferences
+#'
+#' @param filen the full path filename for the final Rmd file. Ensure its 
+#'     filetype = .Rmd. The default = "", which write the custom text to the 
+#'     console.
+#'
+#' @return nothing but it does write a file to one's hard drive in the location
+#'    listed in filen
+#' @export
+#'
+#' @examples
+#' setuprmd(filen="")
+setuprmd <- function(filen="") {
+  cat('--- \n',
+      'title: "Title" \n',
+      'author: Malcolm Haddon \n',
+      'date: "`r Sys.time()`"  \n',
+      'output: \n',
+      '  html_document:   \n',
+      '    df_print: paged    \n',
+      '    fig_caption: yes \n',
+      '    fig_height: 5.5 \n',
+      '    fig_width: 6.5\n',
+      '    number_section: yes \n',
+      # '    toc: yes \n',
+      # '    toc_depth: 2 \n',
+      '---  \n',
+      sep = "", file=filen, append=FALSE)
+  cat('  \n',
+      '```{r setup, include=FALSE}  \n',
+      'knitr::opts_chunk$set(  \n',
+      '  echo = FALSE,  \n',
+      '  message = FALSE,  \n',
+      '  warning = FALSE)  \n\n',
+      'options(knitr.kable.NA = "", \n',
+      '        knitr.table.format = "pandoc")  \n',
+      '  \n\n',
+      sep = "", file=filen, append=TRUE)
+  cat('options("show.signif.stars"=FALSE,  \n',
+      '        "stringsAsFactors"=FALSE,   \n',
+      '        "max.print"=50000,          \n',
+      '        "width"=240)                \n',
+      '```  \n\n',
+      sep = "", file=filen, append=TRUE)
+  # cat('   \n',
+  #     '<style type="text/css">  \n',
+  #     '   body, td, h1, h2, h3, h4 {  \n',
+  #     '   font-size: 16px;   \n',
+  #     '   font-family: "Times New Roman" Times, serif; \n',
+  #     '}   \n',
+  #     '< /style>   \n\n\n',
+  #     sep = "", file=filen, append=TRUE)
+} # end of setuprmd
 
 
 #' @title splitDate - Generates a vector of date and time components

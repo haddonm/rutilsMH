@@ -1,0 +1,43 @@
+--- 
+title: "Title" 
+author: Malcolm Haddon 
+date: "`r Sys.time()`"  
+output: 
+  html_document:   
+    df_print: paged    
+    fig_caption: yes 
+    fig_height: 5.5 
+    fig_width: 6.5
+    number_section: yes 
+---  
+  
+```{r setup, include=FALSE}  
+knitr::opts_chunk$set(  
+  echo = FALSE,  
+  message = FALSE,  
+  warning = FALSE)  
+
+options(knitr.kable.NA = "", 
+        knitr.table.format = "pandoc")  
+  
+
+options("show.signif.stars"=FALSE,  
+        "stringsAsFactors"=FALSE,   
+        "max.print"=50000,          
+        "width"=240)                
+```  
+
+ 
+
+# dohistoricC  
+
+## getvar  
+
+## oneyearsauC  
+
+### oneyearcat 
+
+### getvect 
+
+### oneyearrec 
+
