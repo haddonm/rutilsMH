@@ -4,7 +4,7 @@
 \alias{printV}
 \title{printV returns a vector cbinded to 1:length(invect)}
 \usage{
-printV(invect, label = c("index", "value"))
+printV(invect, label = c("value", "index"))
 }
 \arguments{
 \item{invect}{the input vector to be more easily visualized, this can be

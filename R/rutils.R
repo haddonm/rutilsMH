@@ -515,6 +515,29 @@ geomean <- function(invect) {
   return(gmean)
 }  # end of geomean
 
+#' @title getDBdir identifies the DropBox path
+#'
+#' @description getDBdir is needde where multiple computers have different 
+#'    names.
+#'
+#' @return the path to the DroBox directory
+#' @export
+#'
+#' @examples
+#' getDBdir()
+getDBdir <- function() {
+  if (dir.exists("C:/Users/Malcolm/Dropbox")) {
+    prefixdir <- "C:/Users/Malcolm/Dropbox/"
+  } else { 
+    if (dir.exists("C:/Users/had06a/DropBox")) {
+      prefixdir <- "C:/Users/had06a/DropBox/" 
+    } else {
+      prefixdir <- "C:/Users/User/Dropbox/"
+    }
+  }
+  return(prefixdir)
+} # end of getDBdir
+
 #' @title getmin generates the lower bound for a plot
 #'
 #' @description getmin generates lower bound for a plot where it is unknown
@@ -642,7 +665,7 @@ getnamespace <- function(fun) {
 #' getparplots(13)
 getparplots <- function(nplots) {
   dat <- c(1,1,2,1,2,2,2,2,3,2,3,2,4,2,4,2,3,3,5,2,4,3,4,3,5,3,5,3,5,3,
-           4,4,6,3,6,3,7,3,7,3,7,3,6,4,6,4,6,4,5,5)
+           4,4,6,3,6,3,7,3,7,3,7,3,6,4,6,4,6,4,5,5,7,4,7,4,7,4,6,5,6,5)
   nbits <- length(dat)/2
   if (nplots > nbits)
     stop(cat("getparplots currently only allows for ",nbits," plots \n"))
@@ -1924,9 +1947,9 @@ plotxyy <- function(x,y1,y2,xlab="",ylab1="",ylab2="",cex=0.85,fnt=7,
 #' vec <- c(TRUE,TRUE,TRUE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,TRUE,TRUE)
 #' printV(vec,label=c("index","logicstate"))
 #' }
-printV <- function(invect,label=c("index","value")) {
+printV <- function(invect,label=c("value","index")) {
   n <- length(invect)
-  outvect <- as.data.frame(cbind(1:n,invect))
+  outvect <- as.data.frame(cbind(invect,1:n))
   colnames(outvect) <- label
   return(outvect)
 } # end of print_V
