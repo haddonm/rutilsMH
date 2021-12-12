@@ -1,4 +1,4 @@
-
+# codeutils ------------------------------------
 
 
 #' @title classDF - tabluate the class of each column in a da
@@ -108,6 +108,757 @@ countgtOne <- function(invect) {
   return(length(pick1)/length(invect))
 }
 
+#' @title facttonum converts a vector of numeric factors into numbers
+#'
+#' @description facttonum converts a vector of numeric factors into numbers.
+#'     If the factors are not numeric then the outcome will be a series of 
+#'     NA. It is up to you to apply this function only to numeric factors. 
+#'     A warning will be thrown if the resulting output vector contains NAs
+#'
+#' @param invect vector of numeric factors to be converted back to numbers
+#'
+#' @return an output vector of numbers instead of the input factors
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'  DepCat <- as.factor(rep(seq(100,600,100),2)); DepCat
+#'  5 * DepCat[3]
+#'  as.numeric(levels(DepCat))  # #only converts levels not the replicates
+#'  DepCat <- facttonum(DepCat)
+#'  5 * DepCat[3]
+#'  x <- factor(letters)
+#'  facttonum(x)
+#' }
+facttonum <- function(invect){
+  if (class(invect) == "factor") {
+    outvect <- suppressWarnings(as.numeric(levels(invect))[invect])
+  }
+  if (class(invect) == "numeric") outvect <- invect
+  if (any(is.na(outvect)))
+    warning("NAs produced, input vector may have non-numbers present \n")
+  return(outvect)
+} # end of facttonum
+
+#' @title freqMean calculates the mean and stdev of count data
+#'
+#' @description freqMean calculates the mean and stdev of count data
+#'     it requires both the values and their associated counts and
+#'     return a vector of two numbers.
+#'
+#' @param values the values for which there are counts
+#' @param infreqs the counts for each of the values empty cells can be
+#'     either 0 or NA
+#'
+#' @return a vector containing the mean and st.dev.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' vals <- c(1,2,3,4,5)
+#' counts <- c(3,NA,7,4,2)
+#' freqMean(vals,counts)  # should give 3.125 and 1.258306
+#' }
+freqMean <- function(values,infreqs) {
+  N <- length(values)
+  if (N != length(infreqs)) {
+    cat("vectors have different lengths \n")
+    ans <- c(NA,NA)
+    names(ans) <- c("mean","stdev")
+  } else {
+    nobs <- sum(infreqs,na.rm=T)
+    sumX <- sum(values * infreqs,na.rm=T)
+    av <- sumX/nobs
+    if (length(infreqs[infreqs > 0.01]) > 1) {
+      sumX2 <- sum(values * values * infreqs,na.rm=T)
+      stdev <- sqrt((sumX2 - (sumX * sumX)/nobs)/(nobs-1))
+    } else { stdev <- NA
+    }
+    ans <- c(av,stdev)
+    names(ans) <- c("mean","stdev")
+  }
+  return(ans)
+} # end of freqMean
+
+#' @title geomean log-normal bias corrected geometric mean of a vector
+#'
+#' @description Calculates log-normal bias corrected geometric mean of a 
+#'     vector. NAs and zeros are removed from consideration.
+#' @param invect is a vector of numbers in linear space.
+#' @return The bias-corrected geometric mean of the vector
+#' @export geomean
+#' @examples
+#' \dontrun{
+#'  x <- c(1,2,3,4,5,6,7,8,9)
+#'  geomean(x)
+#' }
+geomean <- function(invect) {
+  pick <- which((invect <= 0.0))
+  if (length(pick) == 0) {
+    avCE <- mean(log(invect),na.rm=TRUE)
+    stdev <- sd(log(invect),na.rm=TRUE)
+  } else {
+    avCE <- mean(log(invect[-pick]),na.rm=TRUE)
+    stdev <- sd(log(invect[-pick]),na.rm=TRUE)
+  }
+  gmean <- exp(avCE + (stdev^2)/2)
+  return(gmean)
+}  # end of geomean
+
+#' @title getmin generates the lower bound for a plot
+#'
+#' @description getmin generates lower bound for a plot where it is unknown
+#'     whether the minimum is less than zero of not. If less than 0 then
+#'     multiplying by the default mult of 1.05 works well but if the outcome
+#'     if > 0 then the multiplier needs to be adjusted appropriately so 
+#'     the minimum is slightly lower than the minimum of the data
+#'
+#' @param x the vector of data to be tested for its minimum
+#' @param mult the multiplier for both ends, defaults to 1.05 (=0.95 if >0)
+#'
+#' @return a suitable lower bound for a plot if required
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' vect <- rnorm(10,mean=0,sd=2)
+#' sort(vect)
+#' getmin(vect,mult=1.0)
+#' }
+getmin <- function(x,mult=1.05) {
+  ymin <- min(x,na.rm=TRUE)
+  if (ymin < 0) {
+    ymin <- ymin * mult
+  } else {
+    ymin <- ymin * (2 - mult)
+  }
+  return(ymin)
+} # end of getmin
+
+#' @title getmax generates the upper bound for a plot
+#'
+#' @description getmax generates upper bound for a plot where it is unknown
+#'     whether the maximum is greater than zero of not. If > 0 then
+#'     multiplying by the default mult of 1.05 works well but if the outcome
+#'     if < 0 then the multiplier needs to be adjusted appropriately so the 
+#'     maximum is slightly higher than the maximum of the data
+#'
+#' @param x the vector of data to be tested for its maximum
+#' @param mult the multiplier for both ends, defaults to 1.05 (=0.95 if < 0)
+#'
+#' @return a suitable upper bound for a plot if required
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'  vect <- rnorm(10,mean=0,sd=2)
+#'  sort(vect,decreasing=TRUE)
+#'  getmax(vect,mult=1.0)
+#'  vect <- rnorm(10,mean = -5,sd = 1.5)
+#'  sort(vect,decreasing=TRUE)
+#'  getmax(vect,mult=1.0)
+#' }
+getmax <- function(x,mult=1.05) {
+  ymax <- max(x,na.rm=TRUE)
+  if (ymax > 0) {
+    ymax <- ymax * mult
+  } else {
+    ymax <- ymax * (2 - mult)
+  }
+  return(ymax)
+} # end of getmax
+
+#' @title getseed generates a random number seed
+#' 
+#' @description getseed generates a seed for use within set.seed. 
+#'     It produces up to a 6 digit integer from the Sys.time. This
+#'     Initially, at the start of a session there is no seed; a new one 
+#'     is created from the current time and the process ID when one is 
+#'     first required. Here, in getseed, we do not use the process ID so 
+#'     the process is not identical but this at least allows the 
+#'     set.seed value to be stored should the need to repeat a set of 
+#'     simulations arise. The process generates up to a six digit number
+#'     it then randomly reorders those digits and that becomes the seed.
+#'     That way, if you were to call getseed in quick succession the
+#'     seeds generated should differ even when they are generated close
+#'     together in time.
+#'
+#' @return  an integer up to 7 digits long 
+#' @export
+#'
+#' @examples
+#' useseed <- getseed()
+#' set.seed(useseed)
+#' rnorm(5)
+#' set.seed(12345)
+#' rnorm(5)
+#' set.seed(useseed)
+#' rnorm(5)
+getseed <- function() {
+  pickseed <- as.character(as.integer(Sys.time()))
+  nc <- nchar(pickseed)
+  if (nc > 7) pickseed <- substr(pickseed,(nc-6),nc)
+  nc <- nchar(pickseed)  
+  pseed <- unlist(strsplit(pickseed,split=character(0)))
+  pseed <- sample(pseed,nc)
+  newseed <- paste(pseed,collapse="")
+  newseed <- as.numeric(newseed)
+  return(newseed)
+} # end of getseed
+
+#' @title gettime calculates time in seconds passed each day
+#' 
+#' @description gettime is a function designed to facilitate the measurement
+#'     of time between intervals within R software that are expected to
+#'     take a maximum of hours. It calculates the time as seconds elapsed 
+#'     from the start of each day. As long as the timing of events does not
+#'     pass from one day to the next accurate results will be generated.
+#'
+#' @return the time in seconds from the start of a day
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   begin <- gettime()
+#'   for (i in 1:1e6) sqrt(i)
+#'   finish <- gettime()
+#'   print(finish - begin)
+#' }
+gettime <- function() {
+  tim <- unlist(as.POSIXlt(Sys.time()))
+  hr <- as.numeric(tim["hour"])*3600
+  min <- as.numeric(tim["min"])*60
+  sec <- as.numeric(tim["sec"])
+  return(hr+min+sec)
+} # end of gettime
+
+#' @title greplow - uses tolower in the search for the pattern
+#'
+#' @description greplow a grep implementation that ignores the case of 
+#'     either the search pattern or the object to be search. Both are 
+#'     converted to lower case before using grep.
+#' @param pattern - the text to search for in x
+#' @param x - the vector or object within which to search for 'pattern' once
+#'    both have been converted to lowercase.
+#'
+#' @return the index location within x of 'pattern', if it is present, 
+#'     an empty integer if not
+#' @export greplow
+#'
+#' @examples
+#' \dontrun{
+#' txt <- c("Long","Lat","LongE","LatE","Depth","Zone","Effort","Method")
+#' greplow("zone",txt)
+#' greplow("Zone",txt)
+#' greplow("long",txt)
+#' }
+greplow <- function(pattern,x) {
+  return(grep(tolower(pattern),tolower(x)))
+}
+
+#' @title info gets the dimension or length of a matrix, array, data.frame or list
+#' 
+#' @description info gets the dimension or length of a matrix, array, 
+#'    data.frame or list. It is safer than dim because if the object is a
+#'    list dim fails.
+#'
+#' @param invar an object that is either a matrix, an array, a data.frame or
+#'     a list
+#' @param verbose should the head of the object be printed to console. 
+#'     default=FALSE
+#'
+#' @return the dimensions of the object
+#' @export
+#'
+#' @examples
+#' x <- array(rnorm(125,mean=5,sd=1),dim=c(5,5,5))
+#' info(x,FALSE)
+#' x <- list(x=5,y=6,z=7)
+#' info(x)
+info <- function(invar,verbose=FALSE) {
+  cat("Class: ",class(invar),"\n")
+  str(invar,max.level=1)
+  cat("\n")
+  categories <-  c("matrix","array","data.frame")
+  if (class(invar) %in% categories) {
+    cat("Dimension: ",dim(invar),"\n")
+    if (verbose) print(head(invar,2))
+  } else {
+    cat("Length: ",length(invar),"\n")
+  }
+} # end of info
+
+#' @title makeUnit generates a unit matrix whose diagonal can be changed
+#' 
+#' @description makeUnit generates a unit matrix but includes the facility
+#'     to alter the diagonal value away from 1.0 if desired.
+#'
+#' @param N the order of the matrix
+#' @param diagvalue defaults to 1.0, but otherwise can be a different 
+#'     constant or a vector of dimension N
+#'
+#' @return a square matrix defaulting to a unit matrix
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   makeUnit(4)
+#'   surv <- exp(-0.2)
+#'   makeUnit(4,surv)
+#' }
+makeUnit <- function(N,diagvalue=1.0) {
+  N <-trunc(N)
+  UnitM <- matrix(0,nrow=N,ncol=N,dimnames=list(1:N,1:N))
+  diag(UnitM) <- diagvalue
+  return(UnitM)
+}  # end of makeUnit
+
+
+#' @title magnitude returns the magnitude of numbers
+#'
+#' @description magnitude is useful when using an
+#'     optimizer such as optim, which uses a parscale parameter.
+#'     magnitude can determine the respective parscale value for each
+#'     parameter value.
+#'
+#' @param x the vector of numbers (parameters) whose magnitudes are
+#'     needed
+#'
+#' @return a vector of magnitudes
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   x <- c(0,0.03,0.3,3,30,300,3000)
+#'   magnitude(x)
+#' }
+magnitude <- function(x) {
+  return(10^(floor(log10(abs(x)))))
+}
+
+#' @title outfit tidy print of output from optim, nlminb, or nlm
+#'
+#' @description outfit takes in the output list from either optim,
+#'     nlminb, or nlm and prints it more tidily to the console, In the
+#'     case of nlm it also prints the conclusion regarding the
+#'     solution. It might be more effective to implement an S3 method.
+#'
+#' @param inopt the list object output by nlm, nlminb, or optim
+#' @param backtran a logical default = TRUE If TRUE it assumes
+#'     that the parameters have been log-transformed for stability
+#'     and need back-transforming
+#' @param digits the number of digits to round the backtransformed 
+#'     parameters. defaults to 5.
+#' @param title character string used to label the output if desired,
+#'     default = empty character string
+#' @param parnames default="" which means the estimated parameters
+#'     will merely be numbered. If a vector of names is given 
+#'     then this will be used instead, at least, for nlm and optim.
+#'
+#' @return nothing but it does print the list to the console tidily
+#' @export
+#'
+#' @examples
+#'  x <- 1:10  # generate power function data from c(2,2) + random
+#'  y <- c(2.07,8.2,19.28,40.4,37.8,64.68,100.2,129.11,151.77,218.94)
+#'  alldat <- cbind(x=x,y=y)
+#'  pow <- function(pars,x) return(pars[1] * x ^ pars[2])
+#'  ssq <- function(pars,indat) {
+#'     return(sum((indat[,"y"] - pow(pars,indat[,"x"]))^2))
+#'  }  # fit a power curve using normal random errors
+#'  pars <- c(2,2)
+#'  best <- nlm(f=ssq,p=pars,typsize=magnitude(pars),indat=alldat)
+#'  outfit(best,backtran=FALSE) #a=1.3134, b=2.2029 ssq=571.5804
+outfit <- function(inopt,backtran=TRUE,digits=5,title="",
+                   parnames=""){
+  #  inopt=bestvB; backtran = FALSE; digits=5; title=""; parnames=""
+  nlmcode <- c("gradient close to 0, probably solution",
+               ">1 iterates in tolerance, probably solution",
+               "Either ~local min or steptol too small",
+               "iteration limit exceeded",
+               "stepmax exceeded ,5 times")
+  if (length(grep("value",names(inopt))) > 0) { # optim
+    cat("optim solution: ", title,"\n")
+    cat("minimum     : ",inopt$value,"\n")
+    cat("iterations  : ",inopt$counts," iterations, gradient\n")
+    cat("code        : ",inopt$convergence,"\n")
+    if (backtran) {
+      ans <- cbind(par=inopt$par,transpar=round(exp(inopt$par),digits))
+    } else {
+      ans <- t(inopt$par)
+    }
+    if ((length(parnames) > 1) & (length(parnames) == length(inopt$par))) {
+      rownames(ans) <- parnames
+    } else {
+      rownames(ans) <- 1:length(inopt$par)
+    }
+    print(ans)
+    cat("message     : ",inopt$message,"\n")
+  } # end of optim
+  if (length(grep("minimum",names(inopt))) > 0) {  # nlm - preferred
+    cat("nlm solution: ", title,"\n")
+    cat("minimum     : ",inopt$minimum,"\n")
+    cat("iterations  : ",inopt$iterations,"\n")
+    cat("code        : ",inopt$code,nlmcode[inopt$code],"\n")
+    if (backtran) {
+      ans <- cbind(par=inopt$estimate,gradient=inopt$gradient,
+                   transpar=round(exp(inopt$estimate),digits))
+    } else {
+      ans <- cbind(par=inopt$estimate,gradient=inopt$gradient)
+    }
+    if ((length(parnames) > 1) & 
+        (length(parnames) == length(inopt$estimate))) {
+      rownames(ans) <- parnames
+    } else {
+      rownames(ans) <- 1:length(inopt$estimate)
+    }
+    print(ans)
+  } # end of nlm
+  if (length(grep("objective",names(inopt))) > 0) {
+    cat("nlminb solution: ", title,"\n")   # nlminb seems to be deprecated
+    cat("par        : ",inopt$par,"\n")
+    cat("minimum    : ",inopt$objective,"\n")
+    cat("iterations : ",inopt$iterations,"\n")
+    cat("code       : ",inopt$evaluations," iterations, gradient\n")
+    cat("message    : ",inopt$message,"\n")
+  }
+  if (length(grep("hessian",names(inopt))) > 0) {
+    cat("hessian     : \n")
+    print(inopt$hessian)
+  }
+} # end of outfit
+
+#' @title printV returns a vector cbinded to 1:length(invect)
+#'
+#' @description printV takes an input vector and generates another vector of
+#'     numbers 1:length(invect) which it cbinds to itself. This is primarily
+#'     useful when trying to print out a vector which can be clumsy to read 
+#'     when print across the screen. applying printV leads to a single 
+#'     vector being printed down the screen
+#'
+#' @param invect the input vector to be more easily visualized, this can be
+#'     numbers, characters, or logical. If logical the TRUE and FALSE are
+#'     converted to 1's and 0's
+#' @param label the column labels for vector, default is index and value
+#'
+#' @return a dataframe containing the vector 1:length(invect), and invect.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' vec <- rnorm(10,mean=20,sd=2)
+#' printV(vec)
+#' vec <- letters
+#' printV(vec)
+#' vec <- c(TRUE,TRUE,TRUE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,TRUE,TRUE)
+#' printV(vec,label=c("index","logicstate"))
+#' }
+printV <- function(invect,label=c("value","index")) {
+  n <- length(invect)
+  outvect <- as.data.frame(cbind(invect,1:n))
+  colnames(outvect) <- label
+  return(outvect)
+} # end of print_V
+
+#' @title properties - used to check a data.frame before standardization
+#'
+#' @description properties - used to check a data.frame before
+#'     standardization. The maximum and minimum are constrained to four
+#'     decimal places. It allows for columns of NAs and for Posix 
+#'     columns.
+#' @param indat the data.frame containing the data fields to be used
+#'     in the subsequent standardization. It tabulates the number of
+#'     NAs and the number of unique values for each variable and finds
+#'     the minimum and maximum of the numeric variables
+#' @param dimout determines whether or noth the dimensions of the data.frame
+#'     are printed to the screen or not; defaults to FALSE
+#' @return a data.frame with the rows being each variable from the input
+#'     input data.frame and the columns being the number of NAs, the
+#'     number of unique values, and minimum and maximum (where possible).
+#' @export properties
+#' @examples
+#' \dontrun{
+#'  data(abdat)
+#'  properties(abdat$fish)
+#' }
+properties <- function(indat,dimout=FALSE) {  # indat=sps1; dimout=FALSE
+  dominmax <- function(x) {
+    if (length(which(x > 0)) == 0) return(c(NA,NA))
+    mini <- min(x,na.rm=TRUE)
+    maxi <- max(x,na.rm=TRUE)
+    return(c(mini,maxi))
+  }
+  if(dimout) print(dim(indat))
+  isna <- sapply(indat,function(x) sum(is.na(x)))
+  uniques <- sapply(indat,function(x) length(unique(x)))
+  columns <- length(indat)
+  clas <- character(columns)
+  for (i in 1:columns) {
+    clas[i] <- class(indat[,i])[1]
+  }
+  numbers <- c("integer","numeric")
+  pick <- which(clas %in% numbers)
+  minimum <- numeric(length(uniques))
+  maximum <- minimum
+  for (i in 1:length(pick)) {
+    minmax <- dominmax(indat[,pick[i]])
+    minimum[pick[i]] <- minmax[1]
+    maximum[pick[i]] <- minmax[2]
+  }
+  pick <- which((clas == "character") & (isna == 0))
+  if (length(pick) > 0) {
+    for (i in 1:length(pick)) {
+      pickna <- which(indat[,pick[i]] == "NA")
+      if (length(pickna) > 0) isna[pick[i]] <- length(pickna)
+    }
+  }  
+  index <- 1:length(isna)
+  props <- as.data.frame(cbind(index,isna,uniques,clas,round(minimum,4),
+                               round(maximum,4),t(indat[1,])))
+  colnames(props) <- c("Index","isNA","Unique","Class","Min",
+                       "Max","Example")
+  return(props)
+} # end of properties
+
+
+#' @title quants used in apply to estimate quantiles across a vector
+#'
+#' @description quants used in 'apply' to estimate quantiles across a vector
+#' @param invect vector of values
+#' @param probs the quantiles wanted in the outputs; default = 
+#'     c(0.025,0.05,0.5,0.95,0.975)
+#' @return a vector of the c(0.025,0.05,0.5,0.95,0.975) quantiles or
+#'     whatever is input to probs
+#' @export quants
+#' @examples
+#' \dontrun{
+#'  x <- runif(1000)
+#'  quants(x)
+#'  quants(x,probs=c(0.075,0.5,0.925))
+#' }
+quants <- function(invect,probs = c(0.025,0.05,0.5,0.95,0.975)) {
+  ans <- quantile(invect,probs =probs,na.rm=T)
+  return(ans)
+}
+
+#' @title removeEmpty removes empty strings from a vector of strings
+#'
+#' @description removeEmpty removes empty strings from a vector of strings.
+#'     Such spaces often created by spurious commas at the end of lines. It
+#'     also removes strings made up only of spaces and removes spaces from
+#'     inside of inidivdual chunks of text.
+#'
+#' @param invect vector of input strings, possibly containing empty strings
+#'
+#' @return a possibly NULL vector of strings
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' x <- c("1","","2","","   ","3"," ","4","","a string","end")
+#' x
+#' length(x)
+#' length(removeEmpty(x))
+#' removeEmpty(x)
+#' }
+removeEmpty <- function(invect) {
+  tmp <- gsub(" ","",invect)
+  tmp <- tmp[nchar(tmp) > 0]
+  return(tmp)
+}
+
+#' @title revsum generates a vector of the cumulative sum from n to 1 
+#'
+#' @description revsum generates a vector of the cumulative sum of an input
+#'     vector from n to 1 rather than from 1 - n, as in cumsum.
+#' 
+#' @param x an input vector
+#'
+#' @return a vector of cumulative values from n to 2
+#' @export
+#'
+#' @examples
+#' x <- c(1,2,3,4,5)/15
+#' print(round(cbind(x,cumsum(x),revsum(x)),3))
+revsum <- function(x) {
+  n <- length(x)
+  if (n < 2) warning("Input vector in revsum less than length 2.  \n")
+  ans <- numeric(n)
+  ans[n] <- x[n]
+  for (i in (n-1):1) ans[i] <- ans[i+1] + x[i] 
+  return(ans)
+} # end of revsum
+
+
+#' @title str1 a simple replacement for str(x,max.level=1)
+#' 
+#' @description str1 an abbreviated replacement for str(x,max.level=1), which I 
+#'     put together because to often I make a typo when typing out the full
+#'     str syntax. Hence I find str1 helpful
+#'
+#' @param x the object whose structure is to be listed
+#'
+#' @return str(x,max.level=1)
+#' @export
+#'
+#' @examples
+#' x <- matrix(rnorm(25,mean=5,sd=1),nrow=5,ncol=5)
+#' str1(x)
+str1 <- function(x){
+  return(str(x,max.level=1))
+}
+
+#' @title str2 a simple replacement for str(x,max.level=2)
+#' 
+#' @description str2 an abbreviated replacement for str(x,max.level=2), which I 
+#'     put together because to often I make a typo when typing out the full
+#'     str syntax. For when str1 is not detailed enough.
+#'
+#' @param x the object whose structure is to be listed
+#'
+#' @return str(x,max.level=2)
+#' @export
+#'
+#' @examples
+#' x <- matrix(rnorm(25,mean=5,sd=1),nrow=5,ncol=5)
+#' str2(x)
+str2 <- function(x){
+  return(str(x,max.level=2))
+}
+
+#' @title tidynames can replace awkward data.frame names with better ones
+#'
+#' @description tidynames can replace awkward or overly long data.frame
+#'     column names with better ones that are easier to use. It also
+#'     permits one to maintain the same set of column names within an
+#'     analysis even when the source data.frame includes alterations.
+#'
+#' @param columns the vector of names that should include the ones to be
+#'     altered
+#' @param replace the names to be changed, as a vector of character
+#'     strings
+#' @param repwith the replacement names as a vector of character strings
+#'
+#' @return a vector of new columns names
+#' @export
+#'
+#' @examples
+#'  print("wait")
+tidynames <- function(columns,replace,repwith) {
+  nreplace <- length(replace)
+  if (nreplace != length(repwith))
+    stop("Different number of names in replace and repwith \n")
+  for (i in 1:nreplace) {
+    pick <- grep(replace[i],columns)
+    #cat(i,pick,"\n")
+    if (pick[1] > 0) {
+      columns[pick[1]] <- repwith[i]
+    } else {
+      warning(paste0(replace[i]," not in the dataset"))
+    }
+  }
+  return(columns)
+} # end of tidynames
+
+#' @title toXL copies a data.frame or matrix to the clipboard
+#'
+#' @description toXL copies a data.frame or matrix to the clipboard
+#'    so one can then switch to Excel and just type <ctrl> + V to paste the
+#'    data in place
+#'
+#' @param x a vector or matrix
+#' @param output - a boolean determining whether to print the object to the
+#'    screen as well as the clipboard; defaults to FALSE
+#' @return Places the object 'x' into the clipboard ready for pasting
+#' @export toXL
+#' @examples
+#' datamatrix <- matrix(data=rnorm(100),nrow=10,ncol=10)
+#' colnames(datamatrix) <- paste0("A",1:10)
+#' rownames(datamatrix) <- paste0("B",1:10)
+#' toXL(datamatrix,output=TRUE)
+toXL <- function(x,output=FALSE) {
+  write.table(x,"clipboard",sep="\t")
+  if(output) print(x)
+}
+
+#' @title which.closest find the number closest to a given value
+#'
+#' @description which.closest finds either the number in a vector which is
+#'     closest to the input value or its index value
+#'
+#' @param x the value to lookup
+#' @param invect the vector in which to lookup the value x
+#' @param index should the closest value be returned or its index; 
+#'     default=TRUE
+#'
+#' @return by default it returns the index in the vector of the value 
+#'     closest to the input value
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' vals <- rnorm(100,mean=5,sd=2)
+#' pick <- which.closest(5.0,vals,index=TRUE)
+#' pick
+#' vals[pick]
+#' which.closest(5.0,vals,index=FALSE)
+#' }
+which.closest <- function(x,invect,index=T) {
+  pick <- which.min(abs(invect-x))
+  if (index) {
+    return(pick)
+  } else {
+    return(invect[pick])
+  }
+} # end of which_.closest
+
+#' @title wtedmean calculates the weighted mean of a set of values and weights
+#'
+#' @description wtedmean solves the problem of calculating a weighted mean
+#'     value from a set of values with different weights. Within the aMSE this
+#'     is common when trying to summarize across populations within an SAU or
+#'     summarize SAU within a zone by finding a mean value weighted by the
+#'     respective catch from each related population or SAU.
+#'
+#' @param x the values whose weighted mean is wanted
+#' @param wts the weights to use, often a set of catches
+#'
+#' @return a single real number
+#' @export
+#'
+#' @examples
+#' saucpue <- c(91.0,85.5,88.4,95.2)
+#' saucatch <- c(42.0,102.3,75.0,112.0)
+#' wtedmean(saucpue,saucatch)
+#' saucatch/sum(saucatch)  # the relative weights
+wtedmean <- function(x,wts) {
+  pwts <- wts/sum(wts,na.rm=TRUE)
+  ans <- sum((x * pwts),na.rm=TRUE)
+  return(ans)
+} # end of wtedmean
+
+#' @title '\%ni\%' identifies which element in x is NOT in y
+#'
+#' @param x a vector of elements which can be numeric or character
+#' @param y a vector of elements which can be numeric or character
+#'
+#' @export
+#' 
+#' @examples
+#' \dontrun{
+#'   x <- 1:10
+#'   y <- 6:18
+#'   x %ni% y
+#'   pick <- (x %ni% y)
+#'   x[pick]
+#' }
+`%ni%` <- function(x,y) {
+  !(x %in% y)
+}
+
+
+# fileutils -----------------------------------------------
+
 #' @title describefunctions lists all R functions in a set of files
 #' 
 #' @description describefunctions lists all the R functions in a set of R files
@@ -194,66 +945,6 @@ describefunctions <- function(indir,files="",outfile="") {
   if (nchar(outfile) > 5) write.csv(x,file = outfile)
   return(invisible(x))
 } # end of describefunctions
-
-#' @title diagrams provides the syntax of functions for making diagrams
-#' 
-#' @description diagrams provides the syntax of functions for making diagrams
-#'
-#' @return nothing but it write syntax for diagram functions to the console
-#' @export
-#'
-#' @examples
-#' diagrams()
-diagrams <- function() {
-  cat('circle(origx = 50, origy = 50, radius = 10, col = 1, lwd = 1) \n')
-  cat('makecanvas(xstart = 0, xfinish = 100, ystart = 0, yfinish = 100) \n')
-  cat('makerect(left, xinc, top, yinc, linecol = "grey", lwd = 1) \n')
-  cat('makevx(init, inc) \n')
-  cat('makevy(init, inc) \n')
-  cat('plotoblong(x0, x1, y0, y1, border = 1, col = 0, lwd = 1)  \n')
-} # end of diagrams
-
-#' @title digitsbyrow a helper function for knitr, to specify formats by row
-#'
-#' @description digitsbyrow is a solution obtained from StackOverFlow, sugegsted
-#'     by Tim Bainbridge in 11/12/19. knitr formats table columns as a whole,
-#'     which can be a problem if one wants to mix integers with real numbers in
-#'     the same columns. This first transposes the data.frame/matrix being
-#'     printed, fixes the formats, and then transposes it back. In knitr one
-#'     then needs to use the align argument to fix the alignment. In may version
-#'     I have conserved both rownames and colnames for both data.frames and
-#'     matrices (the original only did so for data.frames but I often print
-#'     matrices). digitsbyrow converts all entries to character so knitr becomes
-#'     necessary for printing.
-#'
-#' @param df the data.frame or matrix to be printed by knitr
-#' @param digits a vector of the digits wanted for each row of the df or matrix
-#'
-#' @return a formatted data.frame or matrix depending on input
-#' @export
-#'
-#' @examples
-#' x <- matrix(c(rnorm(5,mean=5,sd=1),seq(1,10,1)),nrow=3,ncol=5,byrow=TRUE,
-#'             dimnames=list(1:3,1:5))
-#' digitsbyrow(x, c(3,0,0))
-#' # needs knitr to use kable
-#' # kable(digitsbyrow(x, c(3,0,0)),align='r',row.names=TRUE)
-digitsbyrow <- function(df, digits) {
-  tmp0 <- data.frame(t(df))
-  tmp1 <- mapply(
-    function(df0, digits0) {
-      formatC(df0, format="f", digits=digits0)
-    },
-    df0=tmp0, digits0=digits
-  )
-  tmp1 <- data.frame(t(tmp1))
-  rownames(tmp1) <- rownames(df)
-  colnames(tmp1) <- colnames(df)
-  if (class(df)[1] == "matrix") tmp1 <- as.matrix(tmp1)
-  return(tmp1)
-} # end of digitsbyrow
-
-
 
 #' @title extractpathway traces the sequence of functions calls within a function
 #'
@@ -351,37 +1042,6 @@ extractRcode <- function(indir,rmdfile,filename="out.R") { # indir=indir; rmdfil
   }
 } # end of extractRcode
 
-#' @title facttonum converts a vector of numeric factors into numbers
-#'
-#' @description facttonum converts a vector of numeric factors into numbers.
-#'     If the factors are not numeric then the outcome will be a series of 
-#'     NA. It is up to you to apply this function only to numeric factors. 
-#'     A warning will be thrown if the resulting output vector contains NAs
-#'
-#' @param invect vector of numeric factors to be converted back to numbers
-#'
-#' @return an output vector of numbers instead of the input factors
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#'  DepCat <- as.factor(rep(seq(100,600,100),2)); DepCat
-#'  5 * DepCat[3]
-#'  as.numeric(levels(DepCat))  # #only converts levels not the replicates
-#'  DepCat <- facttonum(DepCat)
-#'  5 * DepCat[3]
-#'  x <- factor(letters)
-#'  facttonum(x)
-#' }
-facttonum <- function(invect){
-  if (class(invect) == "factor") {
-    outvect <- suppressWarnings(as.numeric(levels(invect))[invect])
-  }
-  if (class(invect) == "numeric") outvect <- invect
-  if (any(is.na(outvect)))
-    warning("NAs produced, input vector may have non-numbers present \n")
-  return(outvect)
-} # end of facttonum
 
 #' @title findfuns finds references to other functions within other functions
 #' 
@@ -450,70 +1110,6 @@ findfuns <- function(indir,infile,allfuns) { # indir=indir;infile=files[i]; allf
   return(outf)
 } # end of findfuns
 
-#' @title freqMean calculates the mean and stdev of count data
-#'
-#' @description freqMean calculates the mean and stdev of count data
-#'     it requires both the values and their associated counts and
-#'     return a vector of two numbers.
-#'
-#' @param values the values for which there are counts
-#' @param infreqs the counts for each of the values empty cells can be
-#'     either 0 or NA
-#'
-#' @return a vector containing the mean and st.dev.
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' vals <- c(1,2,3,4,5)
-#' counts <- c(3,NA,7,4,2)
-#' freqMean(vals,counts)  # should give 3.125 and 1.258306
-#' }
-freqMean <- function(values,infreqs) {
-  N <- length(values)
-  if (N != length(infreqs)) {
-    cat("vectors have different lengths \n")
-    ans <- c(NA,NA)
-    names(ans) <- c("mean","stdev")
-  } else {
-    nobs <- sum(infreqs,na.rm=T)
-    sumX <- sum(values * infreqs,na.rm=T)
-    av <- sumX/nobs
-    if (length(infreqs[infreqs > 0.01]) > 1) {
-      sumX2 <- sum(values * values * infreqs,na.rm=T)
-      stdev <- sqrt((sumX2 - (sumX * sumX)/nobs)/(nobs-1))
-    } else { stdev <- NA
-    }
-    ans <- c(av,stdev)
-    names(ans) <- c("mean","stdev")
-  }
-  return(ans)
-} # end of freqMean
-
-#' @title geomean log-normal bias corrected geometric mean of a vector
-#'
-#' @description Calculates log-normal bias corrected geometric mean of a 
-#'     vector. NAs and zeros are removed from consideration.
-#' @param invect is a vector of numbers in linear space.
-#' @return The bias-corrected geometric mean of the vector
-#' @export geomean
-#' @examples
-#' \dontrun{
-#'  x <- c(1,2,3,4,5,6,7,8,9)
-#'  geomean(x)
-#' }
-geomean <- function(invect) {
-  pick <- which((invect <= 0.0))
-  if (length(pick) == 0) {
-    avCE <- mean(log(invect),na.rm=TRUE)
-    stdev <- sd(log(invect),na.rm=TRUE)
-  } else {
-    avCE <- mean(log(invect[-pick]),na.rm=TRUE)
-    stdev <- sd(log(invect[-pick]),na.rm=TRUE)
-  }
-  gmean <- exp(avCE + (stdev^2)/2)
-  return(gmean)
-}  # end of geomean
 
 #' @title getDBdir identifies the DropBox path
 #'
@@ -538,68 +1134,6 @@ getDBdir <- function() {
   return(prefixdir)
 } # end of getDBdir
 
-#' @title getmin generates the lower bound for a plot
-#'
-#' @description getmin generates lower bound for a plot where it is unknown
-#'     whether the minimum is less than zero of not. If less than 0 then
-#'     multiplying by the default mult of 1.05 works well but if the outcome
-#'     if > 0 then the multiplier needs to be adjusted appropriately so 
-#'     the minimum is slightly lower than the minimum of the data
-#'
-#' @param x the vector of data to be tested for its minimum
-#' @param mult the multiplier for both ends, defaults to 1.05 (=0.95 if >0)
-#'
-#' @return a suitable lower bound for a plot if required
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' vect <- rnorm(10,mean=0,sd=2)
-#' sort(vect)
-#' getmin(vect,mult=1.0)
-#' }
-getmin <- function(x,mult=1.05) {
-  ymin <- min(x,na.rm=TRUE)
-  if (ymin < 0) {
-    ymin <- ymin * mult
-  } else {
-    ymin <- ymin * (2 - mult)
-  }
-  return(ymin)
-} # end of getmin
-
-#' @title getmax generates the upper bound for a plot
-#'
-#' @description getmax generates upper bound for a plot where it is unknown
-#'     whether the maximum is greater than zero of not. If > 0 then
-#'     multiplying by the default mult of 1.05 works well but if the outcome
-#'     if < 0 then the multiplier needs to be adjusted appropriately so the 
-#'     maximum is slightly higher than the maximum of the data
-#'
-#' @param x the vector of data to be tested for its maximum
-#' @param mult the multiplier for both ends, defaults to 1.05 (=0.95 if < 0)
-#'
-#' @return a suitable upper bound for a plot if required
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#'  vect <- rnorm(10,mean=0,sd=2)
-#'  sort(vect,decreasing=TRUE)
-#'  getmax(vect,mult=1.0)
-#'  vect <- rnorm(10,mean = -5,sd = 1.5)
-#'  sort(vect,decreasing=TRUE)
-#'  getmax(vect,mult=1.0)
-#' }
-getmax <- function(x,mult=1.05) {
-  ymax <- max(x,na.rm=TRUE)
-  if (ymax > 0) {
-    ymax <- ymax * mult
-  } else {
-    ymax <- ymax * (2 - mult)
-  }
-  return(ymax)
-} # end of getmax
 
 #' @title getname returns the name of a variable as character
 #'
@@ -646,122 +1180,146 @@ getnamespace <- function(fun) {
   return(nss[vapply(envs, function(env) exists(fun, env, inherits = FALSE),logical(1))])
 } # end of get_namespace
 
-#' @title getparplots selects the par(plots()) rows and columns for plots
+#' @title identifyfuns uses text from readLines to identify function beginnings
+#' 
+#' @description identifyfuns is used when tracing the interactions between 
+#'     functions within R packages. It uses the vector of character vectors
+#'     that is produced by readLines and identifies the starting lines of all
+#'     functions. It ignores all functions defined within comments, as well as
+#'     ignoring all functions defined internally to other functions. It does the
+#'     latter by testing for a couple of spaces at the start of a line 
+#'     containing a function definition, which functions defined within another
+#'     function should have.
 #'
-#' @description getparplots selects the rows and columns used by
-#'     par(plots(rows,columns)). This is required when generating plots under
-#'     conditions where it is not know how many plots will be required when
-#'     writing the plot.function. Currently the maximum is limited to 25 plots
+#' @param content the output of applying readLines to a text file containing 
+#'     R code.
 #'
-#' @param nplots the number of plots to generate in one plot. This has a maximum
-#'     value of 25. If getparplots is used with nplots > 25 it will stop after
-#'     throwing an error message.
-#'
-#' @return a vector of 2, the rows and columns for the par(plots)
+#' @return a vector of line numbers identifying the start of all functions 
+#'     within the content. This may be a vector of zero length if there are no
+#'     functions.
 #' @export
 #'
 #' @examples
-#' getparplots(12)
-#' getparplots(13)
-getparplots <- function(nplots) {
-  dat <- c(1,1,2,1,2,2,2,2,3,2,3,2,4,2,4,2,3,3,5,2,4,3,4,3,5,3,5,3,5,3,
-           4,4,6,3,6,3,7,3,7,3,7,3,6,4,6,4,6,4,5,5,7,4,7,4,7,4,6,5,6,5)
-  nbits <- length(dat)/2
-  if (nplots > nbits)
-    stop(cat("getparplots currently only allows for ",nbits," plots \n"))
-  ans <- matrix(dat,nrow=nbits,ncol=2,byrow=TRUE,
-                dimnames=list(1:nbits,c("rows","cols")))
-  return(ans[nplots,])
-} # end of getparplots
+#' txt <- c("# this is a comment",
+#' "dummy <- function() { return(NULL) }",
+#' "# a possibly confusing use of function",
+#' "anotherdummy <- function() { return(NULL) }")
+#' identifyfuns(txt)
+identifyfuns <- function(content) {
+  funLines <- grep("function",content)
+  testhash <- substr(content[funLines],1,4)
+  omit <- grep("#",testhash)
+  if (length(omit) > 0) {
+    funLines <- funLines[-omit]
+    testhash <- testhash[-omit]
+  }
+  omit2 <- grep("  ",testhash) # remove functions internal to other functions
+  if (length(omit2) > 0) funLines <- funLines[-omit2]
+  return(funLines)
+} # end of identifyfuns
 
-#' @title getseed generates a random number seed
-#' 
-#' @description getseed generates a seed for use within set.seed. 
-#'     It produces up to a 6 digit integer from the Sys.time. This
-#'     Initially, at the start of a session there is no seed; a new one 
-#'     is created from the current time and the process ID when one is 
-#'     first required. Here, in getseed, we do not use the process ID so 
-#'     the process is not identical but this at least allows the 
-#'     set.seed value to be stored should the need to repeat a set of 
-#'     simulations arise. The process generates up to a six digit number
-#'     it then randomly reorders those digits and that becomes the seed.
-#'     That way, if you were to call getseed in quick succession the
-#'     seeds generated should differ even when they are generated close
-#'     together in time.
+#' @title pkgfuns names all functions within a package
 #'
-#' @return  an integer up to 7 digits long 
-#' @export
+#' @description pgkfuns when given the name of a loaded library gives the 
+#'     names of all functions within that library sorted in alphebetical 
+#'     order.
 #'
-#' @examples
-#' useseed <- getseed()
-#' set.seed(useseed)
-#' rnorm(5)
-#' set.seed(12345)
-#' rnorm(5)
-#' set.seed(useseed)
-#' rnorm(5)
-getseed <- function() {
-  pickseed <- as.character(as.integer(Sys.time()))
-  nc <- nchar(pickseed)
-  if (nc > 7) pickseed <- substr(pickseed,(nc-6),nc)
-  nc <- nchar(pickseed)  
-  pseed <- unlist(strsplit(pickseed,split=character(0)))
-  pseed <- sample(pseed,nc)
-  newseed <- paste(pseed,collapse="")
-  newseed <- as.numeric(newseed)
-  return(newseed)
-} # end of getseed
-
-#' @title gettime calculates time in seconds passed each day
-#' 
-#' @description gettime is a function designed to facilitate the measurement
-#'     of time between intervals within R software that are expected to
-#'     take a maximum of hours. It calculates the time as seconds elapsed 
-#'     from the start of each day. As long as the timing of events does not
-#'     pass from one day to the next accurate results will be generated.
+#' @param packname the name of the package as character
 #'
-#' @return the time in seconds from the start of a day
+#' @return a character vector containing the names of all functions in the 
+#'     named package
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#'   begin <- gettime()
-#'   for (i in 1:1e6) sqrt(i)
-#'   finish <- gettime()
-#'   print(finish - begin)
+#'   pkgfuns("graphics")
+#'   pkgfuns("rutilsMH")
 #' }
-gettime <- function() {
-  tim <- unlist(as.POSIXlt(Sys.time()))
-  hr <- as.numeric(tim["hour"])*3600
-  min <- as.numeric(tim["min"])*60
-  sec <- as.numeric(tim["sec"])
-  return(hr+min+sec)
-} # end of gettime
+pkgfuns <- function(packname) { # packname=pkgname
+  funcs <- names(.getNamespace(packname))
+  pick <- grep("__",funcs)
+  funcs <- funcs[-pick]
+  pick <- which(funcs == ".packageName")
+  funcs <- funcs[-pick]
+  return(sort(funcs))
+} # end of pgkfuns
 
-#' @title greplow - uses tolower in the search for the pattern
+#' @title splitDate - Generates a vector of date and time components
 #'
-#' @description greplow a grep implementation that ignores the case of 
-#'     either the search pattern or the object to be search. Both are 
-#'     converted to lower case before using grep.
-#' @param pattern - the text to search for in x
-#' @param x - the vector or object within which to search for 'pattern' once
-#'    both have been converted to lowercase.
-#'
-#' @return the index location within x of 'pattern', if it is present, 
-#'     an empty integer if not
-#' @export greplow
-#'
+#' @description splitDate - Generates a vector of date and time components,
+#'     perhaps for inclusion in filenames or other labels; helpful for
+#'     keeping different run outputs seperate and identifiable.
+#' @param dat - a system time from Sys.time() to be broken in components;
+#'     defaults to NA, whereupon the current time is used.
+#' @return a vector od characters relating to 'Year', 'Month', 'Day','Time',
+#'     and a DateTime, which is a combination of all of these suitable for
+#'     inclusion in a filename.
+#' @export
 #' @examples
 #' \dontrun{
-#' txt <- c("Long","Lat","LongE","LatE","Depth","Zone","Effort","Method")
-#' greplow("zone",txt)
-#' greplow("Zone",txt)
-#' greplow("long",txt)
+#' tmp <- splitDate()
+#' print(tmp)
+#' print(names(tmp))
+#' print(as.numeric(tmp[1:3]))
+#' print(tmp["DateTime"])
 #' }
-greplow <- function(pattern,x) {
-  return(grep(tolower(pattern),tolower(x)))
-}
+splitDate <- function(dat=NA) {
+  if(is.na(dat)) dat <- as.POSIXlt(Sys.time())
+  out <- unlist(dat)
+  tim <- paste(trunc(as.numeric(out[3])),trunc(as.numeric(out[2])),
+               "_",trunc(as.numeric(out[1]),1),sep="")
+  day <- as.character(trunc(as.numeric(out[4])))
+  month <- as.character(trunc(as.numeric(out[5])) + 1)
+  if (nchar(month) == 1) month <- paste(0,month,sep="")
+  year <- as.character(trunc(as.numeric(out[6])) - 100)
+  combined <- paste(year,month,day,"_",tim,sep="")
+  ans <- c(year,month,day,tim,combined)
+  names(ans) <- c("Year","Month","Day","Time","DateTime")
+  return(ans)
+} # end of split_Date
 
+# rmdutils------------------------------------
+
+
+#' @title digitsbyrow a helper function for knitr, to specify formats by row
+#'
+#' @description digitsbyrow is a solution obtained from StackOverFlow, suggested
+#'     by Tim Bainbridge in 11/12/19. knitr formats table columns as a whole,
+#'     which can be a problem if one wants to mix integers with real numbers in
+#'     the same columns. This first transposes the data.frame/matrix being
+#'     printed, fixes the formats, and then transposes it back. In knitr one
+#'     then needs to use the align argument to fix the alignment. In may version
+#'     I have conserved both rownames and colnames for both data.frames and
+#'     matrices (the original only did so for data.frames but I often print
+#'     matrices). digitsbyrow converts all entries to character so knitr becomes
+#'     necessary for printing.
+#'
+#' @param df the data.frame or matrix to be printed by knitr
+#' @param digits a vector of the digits wanted for each row of the df or matrix
+#'
+#' @return a formatted data.frame or matrix depending on input
+#' @export
+#'
+#' @examples
+#' x <- matrix(c(rnorm(5,mean=5,sd=1),seq(1,10,1)),nrow=3,ncol=5,byrow=TRUE,
+#'             dimnames=list(1:3,1:5))
+#' digitsbyrow(x, c(3,0,0))
+#' # needs knitr to use kable
+#' # kable(digitsbyrow(x, c(3,0,0)),align='r',row.names=TRUE)
+digitsbyrow <- function(df, digits) {
+  tmp0 <- data.frame(t(df))
+  tmp1 <- mapply(
+    function(df0, digits0) {
+      formatC(df0, format="f", digits=digits0)
+    },
+    df0=tmp0, digits0=digits
+  )
+  tmp1 <- data.frame(t(tmp1))
+  rownames(tmp1) <- rownames(df)
+  colnames(tmp1) <- colnames(df)
+  if (class(df)[1] == "matrix") tmp1 <- as.matrix(tmp1)
+  return(tmp1)
+} # end of digitsbyrow
 
 #' @title halftable halves the height of a tall narrow data.frame
 #'
@@ -826,174 +1384,9 @@ halftable <- function(inmat,yearcol="Year",subdiv=3) {
   return(outmat)
 } # end of halftable
 
-#' @title identifyfuns uses text from readLines to identify function beginnings
-#' 
-#' @description identifyfuns is used when tracing the interactions between 
-#'     functions within R packages. It uses the vector of character vectors
-#'     that is produced by readLines and identifies the starting lines of all
-#'     functions. It ignores all functions defined within comments, as well as
-#'     ignoring all functions defined internally to other functions. It does the
-#'     latter by testing for a couple of spaces at the start of a line 
-#'     containing a function definition, which functions defined within another
-#'     function should have.
-#'
-#' @param content the output of applying readLines to a text file containing 
-#'     R code.
-#'
-#' @return a vector of line numbers identifying the start of all functions 
-#'     within the content. This may be a vector of zero length if there are no
-#'     functions.
-#' @export
-#'
-#' @examples
-#' txt <- c("# this is a comment",
-#' "dummy <- function() { return(NULL) }",
-#' "# a possibly confusing use of function",
-#' "anotherdummy <- function() { return(NULL) }")
-#' identifyfuns(txt)
-identifyfuns <- function(content) {
-  funLines <- grep("function",content)
-  testhash <- substr(content[funLines],1,4)
-  omit <- grep("#",testhash)
-  if (length(omit) > 0) {
-    funLines <- funLines[-omit]
-    testhash <- testhash[-omit]
-  }
-  omit2 <- grep("  ",testhash) # remove functions internal to other functions
-  if (length(omit2) > 0) funLines <- funLines[-omit2]
-  return(funLines)
-} # end of identifyfuns
 
-info <- function(invar) {
-  cat("Class: ",class(invar),"\n")
-  str(invar)
-  cat("\n")
-  categories <-  c("matrix","array","data.frame")
-  if (class(invar) %in% categories) {
-    cat("Dimension: ",dim(invar),"\n")
-    print(head(invar,2))
-  } else {
-    cat("Length: ",length(invar),"\n")
-  }
-} # end of info
 
-#' @title inthist a replacement for the hist and boxplot functions
-#'
-#' @description inthist it is common to want to generate a list of counts as
-#'     integers from an input vector and then plot then as columns of those
-#'     counts. Alternatively, it is common to have a two-column matrix of 
-#'     values and counts or totals where one wants to plot columns of those
-#'     counts or totals against those values. inhist allows one to enter either 
-#'     a vector of integers to be counted and plotted OR a matrix of values in 
-#'     column 1 and counts or totals in column 2. The option of rounding 
-#'     non-integers is available.
 
-#' @param x a vector of integers to be counted and plotted OR a matrix of
-#'     values in column 1 and counts or totals in column 2
-#' @param col the colour of the fill; defaults to black = 1, set this to 0
-#'     for an empty bar, but then give a value for border
-#' @param border the colour of the outline of each bar defaults to col
-#' @param width denotes the width of each bar; defaults to 0.9, should be >0
-#'     and <= 1
-#' @param xlabel the label for the x axis; defaults to ""
-#' @param ylabel the label for the y axis; defaults to ""
-#' @param main the title for the individual plot; defaults to ""
-#' @param lwd the line width of the border; defaults to 1
-#' @param xmin sets the lower bound for x-axis; used to match plots, defaults to 
-#'     NA whereupon the minimum of values is used
-#' @param xmax sets the upper bound for x axis; used with multiple plots, 
-#'     defaults to NA whereupon the maximum of values is used
-#' @param ymax enables external control of the maximum y value; mainly of
-#'     use when plotting multiple plots together.
-#' @param plotout plot the histogram or not? Defaults to TRUE
-#' @param prop plot the proportions rather than the counts, default=FALSE
-#' @param inc sets the xaxis increment; used to customize the axis;
-#'     defaults to 1.
-#' @param xaxis set to FALSE to define the xaxis outside of inthist;
-#'     defaults to TRUE
-#' @param roundoff if values are not integers should they be rounded off to
-#'     become integers? default=TRUE. Obviously only useful when inputting a
-#'     matrix.
-#' @param ... available to pass extra plot arguments, such as 
-#'     panel.first=grid(), or whatever to the internal plot call
-#'     
-#' @return a matrix of values and counts with the proportions of counts and 
-#'     values is returned invisibly
-#' @export
-#' 
-#' @examples
-#'   x <- trunc(runif(1000)*10) + 1
-#'   inthist(x,col="grey",border=3,width=0.75,xlabel="Random Uniform",
-#'           ylabel="Frequency")
-#'   x <- as.matrix(cbind(c(1,2,3,4,5,6,7,8),trunc(runif(8,1,20))))
-#'   inthist(x,col="grey",border=3,width=0.75,xlabel="integers",
-#'           ylabel="Frequency")
-inthist <- function(x,col=1,border=NULL,width=0.9,xlabel="",ylabel="",
-                    main="",lwd=1,xmin=NA,xmax=NA,ymax=NA,plotout=TRUE,
-                    prop=FALSE,inc=1,xaxis=TRUE,roundoff=TRUE,...) {
-  #  x=ebtipy;col=2;border=3;width=0.9;xlabel="";ylabel="";main="";lwd=1;xmin=NA
-  #  xmax=NA;ymax=NA;plotout=TRUE;prop=FALSE;inc=1;xaxis=TRUE;roundoff=TRUE
-  if (class(x)[1] == "matrix") {
-    counts <- x[,2]
-    values <- x[,1]
-  } else {
-    counts <- table(x)
-    if (length(counts) == 0) stop("No data provided \n\n")
-    values <- as.numeric(names(counts))
-  }
-  if ((sum(!(abs(values - round(values)) < .Machine$double.eps^0.5)) > 0) &
-      (roundoff)) {
-    warning("Using 'inthist' with non-integers; Values now rounded \n")
-    values <- round(values,0)
-  }
-  if ((width <= 0) | (width > 1)) {
-    warning("width values should be >0 and <= 1")
-    width <- 1
-  }
-  counts <- as.numeric(counts)
-  nct <- length(counts)
-  propor <- counts/sum(counts,na.rm=TRUE)
-  if (is.na(xmin)) xmin <- min(values,na.rm=TRUE)
-  if (is.na(xmax)) xmax <- max(values,na.rm=TRUE)
-  if (prop) {
-    outplot <- propor
-  } else {
-    outplot <- counts
-  }
-  if (is.na(ymax)) {
-    if (nchar(main) > 0) {
-      ymax <- max(outplot,na.rm=TRUE) * 1.15
-    } else {
-      ymax <- max(outplot,na.rm=TRUE) * 1.05
-    }
-  }
-  if (plotout) {
-    plot(values,outplot,type="n",
-         xlim=c((xmin-(width*0.75)),(xmax+(width*0.75))),
-         xaxs="r",ylim=c(0,ymax),yaxs="i",xlab="",ylab="",xaxt="n",...)
-    if (xaxis) axis(side=1,at=seq(xmin,xmax,inc),labels=seq(xmin,xmax,inc))
-    if (length(counts) > 0) {
-      for (i in 1:nct) {  # i <- 1
-        x1 <- values[i] - (width/2)
-        x2 <- values[i] + (width/2)
-        x <- c(x1,x1,x2,x2,x1)
-        y <- c(0,outplot[i],outplot[i],0,0)
-        if (is.null(border)) border <- col
-        polygon(x,y,col=col,border=border,lwd=lwd)
-      }
-      title(ylab=list(ylabel, cex=1.0, font=7),
-            xlab=list(xlabel, cex=1.0, font=7))
-      if (nchar(main) > 0) mtext(main,side=3,line=-1.0,outer=FALSE,cex=0.9)
-    }
-  } # end of if-plotout
-  if (length(counts) > 0) {
-    answer <- cbind(values,counts,propor);
-    rownames(answer) <- values
-    colnames(answer) <- c("values","counts","propcounts")
-  } else { answer <- NA  }
-  class(answer) <- c("matrix","inthist")
-  return(invisible(answer))
-}  # end of inthist
 
 #' @title kablerow a replacement for knitr::kable which enables row formatting
 #'
@@ -1030,29 +1423,6 @@ kablerow <- function(x,rowdigits,namerows=NA,namecols=NA) { # x=x; rowdigits=c(2
   kable(xr,align="r",row.names=namerows,col.names=namecols)
 } # end of kablerow
 
-#' @title linept adds a line and a series of points to a plot
-#' 
-#' @description linept adds both a line and a series of points to a plot but
-#'     without the gaps introduced in the line when using type='b' within the
-#'     base R lines function. This is simply a format issue as I do not like 
-#'     those gaps
-#'
-#' @param x the x series of points
-#' @param y the corresponding y series of points
-#' @param lwd the line width, default=1
-#' @param pch the character used, default = 16 (a large dot)
-#' @param ... and other graphics arguments typically used with either lines or
-#'     points
-#'
-#' @return nothing but it does add a pointed line to a plot
-#' @export
-#'
-#' @examples
-#' print("wait on example data")
-linept <- function(x,y,lwd=1,pch=16,...) {
-  lines(x,y,lwd=lwd,...)
-  points(x,y,pch=pch,...)
-}
 
 #' @title listExamples lists all the examples in a package R file
 #'
@@ -1238,27 +1608,176 @@ listfuns <- function(infile) { # infile=paste0(ddir,filen[1]);
 } # end of listfuns
 
 
-#' @title magnitude returns the magnitude of numbers
+#' @title rmdcss generates some initial css style code for HTML Rmd files
+#' 
+#' @description rmdcss generates some initial css style code for HTML Rmd files
+#'     as well as a mathjax script that will generate equation numbers for any
+#'     display equations in the document. This prints the css style code and
+#'     the mathjax script to the console from where it should be pasted into the
+#'     Rmd file immediately following the YAML header. It now contains font 
+#'     sizes for the h1 heaqder and the .inline and .display math classes
 #'
-#' @description magnitude is useful when using an
-#'     optimizer such as optim, which uses a parscale parameter.
-#'     magnitude can determine the respective parscale value for each
-#'     parameter value.
-#'
-#' @param x the vector of numbers (parameters) whose magnitudes are
-#'     needed
-#'
-#' @return a vector of magnitudes
+#' @return nothing but it prints css style code and a mathjax script to the 
+#'     console
 #' @export
 #'
 #' @examples
+#' rmdcss()
+rmdcss <- function() {
+  cat('<style type="text/css"> \n',
+      '  body, td { \n',
+      '  font-size: 16px; \n',
+      '  font-family: "Times New Roman", Times, serif; \n',
+      '} \n')
+  cat('code.r{ \n',
+      '  font-size: 15px; \n',
+      '} \n')
+  cat('pre {  \n',
+      'font-size: 8px  \n',
+      '}  \n')
+  cat('h1 {  \n',
+      '  font-size: 32px  \n',
+      '}  \n')
+  cat('.inline{font-size: 15px; } \n',
+      '.display{font-size: 18px;} \n',
+      '<','/style>  \n')
+  cat('\n\n')
+  cat('<script type="text/x-mathjax-config">  \n',
+      '  MathJax.Hub.Config({  \n',
+      '    TeX: {   \n',
+      '      equationNumbers: {   \n',
+      '        autoNumber: "all",  \n',
+      '        formatNumber: function (n) {return ',3.,'+n}  \n',
+      '      }  \n', 
+      '    }  \n',
+      '  });  \n',
+      '<','/script>  \n')
+} # end of rmdcss
+
+#' @title setuprmd sets up and Rmd file ready to generate an HTML file
+#' 
+#' @description setuprmd sets up a custom Rmd file for generating an HTML file,
+#'     which better suits my own preferences
+#'
+#' @param filen the full path filename for the final Rmd file. Ensure its 
+#'     filetype = .Rmd. The default = "", which write the custom text to the 
+#'     console.
+#'
+#' @return nothing but it does write a file to one's hard drive in the location
+#'    listed in filen
+#' @export
+#'
+#' @examples
+#' setuprmd(filen="")
+setuprmd <- function(filen="") {
+  cat('--- \n',
+      'title: "Title" \n',
+      'author: Malcolm Haddon \n',
+      'date: "`r Sys.time()`"  \n',
+      'output: \n',
+      '  html_document:   \n',
+      '    df_print: paged    \n',
+      '    fig_caption: yes \n',
+      '    fig_height: 5.5 \n',
+      '    fig_width: 6.5\n',
+      '    number_section: yes \n',
+      # '    toc: yes \n',
+      # '    toc_depth: 2 \n',
+      '---  \n',
+      sep = "", file=filen, append=FALSE)
+  cat('  \n',
+      '```{r setup, include=FALSE}  \n',
+      'knitr::opts_chunk$set(  \n',
+      '  echo = FALSE,  \n',
+      '  message = FALSE,  \n',
+      '  warning = FALSE)  \n\n',
+      'options(knitr.kable.NA = "", \n',
+      '        knitr.table.format = "pandoc")  \n',
+      '  \n\n',
+      sep = "", file=filen, append=TRUE)
+  cat('options("show.signif.stars"=FALSE,  \n',
+      '        "stringsAsFactors"=FALSE,   \n',
+      '        "max.print"=50000,          \n',
+      '        "width"=240)                \n',
+      '```  \n\n',
+      sep = "", file=filen, append=TRUE)
+  # cat('   \n',
+  #     '<style type="text/css">  \n',
+  #     '   body, td, h1, h2, h3, h4 {  \n',
+  #     '   font-size: 16px;   \n',
+  #     '   font-family: "Times New Roman" Times, serif; \n',
+  #     '}   \n',
+  #     '< /style>   \n\n\n',
+  #     sep = "", file=filen, append=TRUE)
+} # end of setuprmd
+
+# diagrams ------------------------------------------------
+
+#' @title circle draws a circle with a given origin and radius
+#' 
+#' @description circle provides the means of drawing a circle of a given
+#'     radius and origin within a diagram ready for the addition of text.
+#'
+#' @param origx the final x origin
+#' @param origy the final y origin
+#' @param radius the radius of the circle
+#' @param col the col of the circle
+#' @param lwd the line width of the circle
+#'
+#' @return the matrix of x and y values invisibly  
+#' @export
+#'
+#' @examples
+#'   makecanvas()
+#'   circle(origx=35,origy=70,radius=30,lwd=2,col=1)
+#'   circle(origx=65,origy=60,radius=30,lwd=2,col=2)
+#'   circle(origx=45,origy=40,radius=30,lwd=2,col=4)
+circle <- function(origx=50,origy=50,radius=10,col=1,lwd=1) {
+  ans <- pol2cart(angle=seq(0,360,0.1),dist=radius,xorig=origx,yorig=origy)
+  lines(ans[,"x"],ans[,"y"],lwd=lwd,col=col)
+  return(invisible(ans))
+} # end of circle
+
+#' @title cart2pol converts cartesian coordinates into the polar angle
+#' 
+#' @description cart2pol as a step in converting cartesian coordinates into
+#'     polar coordinates this calculates the angle, in degrees, from x y
+#'     values
+#'
+#' @param x either a vector of two values of a matrix of pairs of values
+#'
+#' @return a single angle of vector of angles
+#'
+#' @examples
 #' \dontrun{
-#'   x <- c(0,0.03,0.3,3,30,300,3000)
-#'   magnitude(x)
+#'   cart2pol(c(3,3))  # should be 45
+#'   dat <- matrix(c(3,4,5,7),nrow=2,ncol=2,byrow=TRUE)
+#'   print(dat)
+#'   cart2pol(dat)     # should be 36.8699 twice.
 #' }
-magnitude <- function(x) {
-  return(10^(floor(log10(abs(x)))))
-}
+cart2pol <- function(x){
+  if (is.vector(x)) angle <- 180 * (atan2(x[1],x[2])) / pi
+  if (is.matrix(x)) angle <- 180 * (atan2(x[,1],x[,2])) / pi
+  return(angle=angle)
+} # end of cart2pol
+
+#' @title diagrams provides the syntax of functions for making diagrams
+#' 
+#' @description diagrams provides the syntax of functions for making diagrams
+#'
+#' @return nothing but it write syntax for diagram functions to the console
+#' @export
+#'
+#' @examples
+#' diagrams()
+diagrams <- function() {
+  cat('circle(origx = 50, origy = 50, radius = 10, col = 1, lwd = 1) \n')
+  cat('makecanvas(xstart = 0, xfinish = 100, ystart = 0, yfinish = 100) \n')
+  cat('makerect(left, xinc, top, yinc, linecol = "grey", lwd = 1) \n')
+  cat('makevx(init, inc) \n')
+  cat('makevy(init, inc) \n')
+  cat('plotoblong(x0, x1, y0, y1, border = 1, col = 0, lwd = 1)  \n')
+} # end of diagrams
 
 #' @title makecanvas sets up a plotting area ready for the flowchart
 #'
@@ -1333,53 +1852,6 @@ makevy <- function(init,inc) {
   return(c(init,init,init-inc,init-inc,init))
 }
 
-#' @title circle draws a circle with a given origin and radius
-#' 
-#' @description circle provides the means of drawing a circle of a given
-#'     radius and origin within a diagram ready for the addition of text.
-#'
-#' @param origx the final x origin
-#' @param origy the final y origin
-#' @param radius the radius of the circle
-#' @param col the col of the circle
-#' @param lwd the line width of the circle
-#'
-#' @return the matrix of x and y values invisibly  
-#' @export
-#'
-#' @examples
-#'   makecanvas()
-#'   circle(origx=35,origy=70,radius=30,lwd=2,col=1)
-#'   circle(origx=65,origy=60,radius=30,lwd=2,col=2)
-#'   circle(origx=45,origy=40,radius=30,lwd=2,col=4)
-circle <- function(origx=50,origy=50,radius=10,col=1,lwd=1) {
-  ans <- pol2cart(angle=seq(0,360,0.1),dist=radius,xorig=origx,yorig=origy)
-  lines(ans[,"x"],ans[,"y"],lwd=lwd,col=col)
-  return(invisible(ans))
-} # end of circle
-
-#' @title cart2pol converts cartesian coordinates into the polar angle
-#' 
-#' @description cart2pol as a step in converting cartesian coordinates into
-#'     polar coordinates this calculates the angle, in degrees, from x y
-#'     values
-#'
-#' @param x either a vector of two values of a matrix of pairs of values
-#'
-#' @return a single angle of vector of angles
-#'
-#' @examples
-#' \dontrun{
-#'   cart2pol(c(3,3))  # should be 45
-#'   dat <- matrix(c(3,4,5,7),nrow=2,ncol=2,byrow=TRUE)
-#'   print(dat)
-#'   cart2pol(dat)     # should be 36.8699 twice.
-#' }
-cart2pol <- function(x){
-  if (is.vector(x)) angle <- 180 * (atan2(x[1],x[2])) / pi
-  if (is.matrix(x)) angle <- 180 * (atan2(x[,1],x[,2])) / pi
-  return(angle=angle)
-} # end of cart2pol
 
 #' @title makerect draws a rectangle once a plot is available
 #'
@@ -1408,30 +1880,6 @@ makerect <- function(left,xinc,top,yinc,linecol="grey",lwd=1,col=NULL) {
   centery <- (top * 2 - yinc)/2
   return(invisible(c(centerx,centery)))
 }
-
-#' @title pickbound selects an optimum number of rows and cols for a plot
-#' 
-#' @description pickbound enables the automatic selection of a pre-determined
-#'     optimum combination of plot rows and columns to suit a number of plots
-#'     up to 30. So, given a number of plots from 1 to 30 this returns a numeric 
-#'     dimer containing the number of rows and columns needed for par statement
-#'
-#' @param n the number of plots to be included in a combined plot
-#'
-#' @return a vector of two with the number of rows and columns for a plot
-#' @export
-#'
-#' @examples
-#' pickbound(5)
-#' pickbound(8)
-pickbound <- function(n) {
-  bounds <- matrix(c(1,1,1,2,2,1,3,2,2,4,2,2,5,3,2,6,3,2,7,4,2,8,4,2,9,3,3,10,3,4,
-                     11,3,4,12,3,4,13,5,3,14,5,3,15,5,3,16,4,4,17,5,4,18,5,4,19,5,4,
-                     20,5,4,21,5,5,22,5,5,23,5,5,24,5,5,25,5,5,26,5,6,27,5,6,28,5,6,
-                     29,5,6,30,5,6),nrow=30,ncol=3,byrow=TRUE)
-  out <- c(bounds[n,2],bounds[n,3])
-  return(out)
-} # end of pickbound
 
 #' @title plotoblong generates an oblong from x0,x1,y0,y1
 #' 
@@ -1513,31 +1961,175 @@ pythag <- function(x) {  # x = ans
   return(ans) 
 }
 
+# plotutils ----------------------------------------------------
 
-#' @title makeUnit generates a unit matrix whose diagonal can be changed
+#' @title inthist a replacement for the hist and boxplot functions
+#'
+#' @description inthist it is common to want to generate a list of counts as
+#'     integers from an input vector and then plot then as columns of those
+#'     counts. Alternatively, it is common to have a two-column matrix of 
+#'     values and counts or totals where one wants to plot columns of those
+#'     counts or totals against those values. inhist allows one to enter either 
+#'     a vector of integers to be counted and plotted OR a matrix of values in 
+#'     column 1 and counts or totals in column 2. The option of rounding 
+#'     non-integers is available.
+#'
+#' @param x a vector of integers to be counted and plotted OR a matrix of
+#'     values in column 1 and counts or totals in column 2
+#' @param col the colour of the fill; defaults to black = 1, set this to 0
+#'     for an empty bar, but then give a value for border
+#' @param border the colour of the outline of each bar defaults to col
+#' @param width denotes the width of each bar; defaults to 0.9, should be >0
+#'     and <= 1
+#' @param xlabel the label for the x axis; defaults to ""
+#' @param ylabel the label for the y axis; defaults to ""
+#' @param main the title for the individual plot; defaults to ""
+#' @param lwd the line width of the border; defaults to 1
+#' @param xmin sets the lower bound for x-axis; used to match plots, defaults to 
+#'     NA whereupon the minimum of values is used
+#' @param xmax sets the upper bound for x axis; used with multiple plots, 
+#'     defaults to NA whereupon the maximum of values is used
+#' @param ymax enables external control of the maximum y value; mainly of
+#'     use when plotting multiple plots together.
+#' @param plotout plot the histogram or not? Defaults to TRUE
+#' @param prop plot the proportions rather than the counts, default=FALSE
+#' @param inc sets the xaxis increment; used to customize the axis;
+#'     defaults to 1.
+#' @param xaxis set to FALSE to define the xaxis outside of inthist;
+#'     defaults to TRUE
+#' @param roundoff if values are not integers should they be rounded off to
+#'     become integers? default=TRUE. Obviously only useful when inputting a
+#'     matrix.
+#' @param ... available to pass extra plot arguments, such as 
+#'     panel.first=grid(), or whatever to the internal plot call
+#'     
+#' @return a matrix of values and counts with the proportions of counts and 
+#'     values is returned invisibly
+#' @export
 #' 
-#' @description makeUnit generates a unit matrix but includes the facility
-#'     to alter the diagonal value away from 1.0 if desired.
+#' @examples
+#'   x <- trunc(runif(1000)*10) + 1
+#'   inthist(x,col="grey",border=3,width=0.75,xlabel="Random Uniform",
+#'           ylabel="Frequency")
+#'   x <- as.matrix(cbind(c(1,2,3,4,5,6,7,8),trunc(runif(8,1,20))))
+#'   inthist(x,col="grey",border=3,width=0.75,xlabel="integers",
+#'           ylabel="Frequency")
+inthist <- function(x,col=1,border=NULL,width=0.9,xlabel="",ylabel="",
+                    main="",lwd=1,xmin=NA,xmax=NA,ymax=NA,plotout=TRUE,
+                    prop=FALSE,inc=1,xaxis=TRUE,roundoff=TRUE,...) {
+  #  x=ebtipy;col=2;border=3;width=0.9;xlabel="";ylabel="";main="";lwd=1;xmin=NA
+  #  xmax=NA;ymax=NA;plotout=TRUE;prop=FALSE;inc=1;xaxis=TRUE;roundoff=TRUE
+  if (class(x)[1] == "matrix") {
+    counts <- x[,2]
+    values <- x[,1]
+  } else {
+    counts <- table(x)
+    if (length(counts) == 0) stop("No data provided \n\n")
+    values <- as.numeric(names(counts))
+  }
+  if ((sum(!(abs(values - round(values)) < .Machine$double.eps^0.5)) > 0) &
+      (roundoff)) {
+    warning("Using 'inthist' with non-integers; Values now rounded \n")
+    values <- round(values,0)
+  }
+  if ((width <= 0) | (width > 1)) {
+    warning("width values should be >0 and <= 1")
+    width <- 1
+  }
+  counts <- as.numeric(counts)
+  nct <- length(counts)
+  propor <- counts/sum(counts,na.rm=TRUE)
+  if (is.na(xmin)) xmin <- min(values,na.rm=TRUE)
+  if (is.na(xmax)) xmax <- max(values,na.rm=TRUE)
+  if (prop) {
+    outplot <- propor
+  } else {
+    outplot <- counts
+  }
+  if (is.na(ymax)) {
+    if (nchar(main) > 0) {
+      ymax <- max(outplot,na.rm=TRUE) * 1.15
+    } else {
+      ymax <- max(outplot,na.rm=TRUE) * 1.05
+    }
+  }
+  if (plotout) {
+    plot(values,outplot,type="n",
+         xlim=c((xmin-(width*0.75)),(xmax+(width*0.75))),
+         xaxs="r",ylim=c(0,ymax),yaxs="i",xlab="",ylab="",xaxt="n",...)
+    if (xaxis) axis(side=1,at=seq(xmin,xmax,inc),labels=seq(xmin,xmax,inc))
+    if (length(counts) > 0) {
+      for (i in 1:nct) {  # i <- 1
+        x1 <- values[i] - (width/2)
+        x2 <- values[i] + (width/2)
+        x <- c(x1,x1,x2,x2,x1)
+        y <- c(0,outplot[i],outplot[i],0,0)
+        if (is.null(border)) border <- col
+        polygon(x,y,col=col,border=border,lwd=lwd)
+      }
+      title(ylab=list(ylabel, cex=1.0, font=7),
+            xlab=list(xlabel, cex=1.0, font=7))
+      if (nchar(main) > 0) mtext(main,side=3,line=-1.0,outer=FALSE,cex=0.9)
+    }
+  } # end of if-plotout
+  if (length(counts) > 0) {
+    answer <- cbind(values,counts,propor);
+    rownames(answer) <- values
+    colnames(answer) <- c("values","counts","propcounts")
+  } else { answer <- NA  }
+  class(answer) <- c("matrix","inthist")
+  return(invisible(answer))
+}  # end of inthist
+
+#' @title linept adds a line and a series of points to a plot
+#' 
+#' @description linept adds both a line and a series of points to a plot but
+#'     without the gaps introduced in the line when using type='b' within the
+#'     base R lines function. This is simply a format issue as I do not like 
+#'     those gaps
 #'
-#' @param N the order of the matrix
-#' @param diagvalue defaults to 1.0, but otherwise can be a different 
-#'     constant or a vector of dimension N
+#' @param x the x series of points
+#' @param y the corresponding y series of points
+#' @param lwd the line width, default=1
+#' @param pch the character used, default = 16 (a large dot)
+#' @param ... and other graphics arguments typically used with either lines or
+#'     points
 #'
-#' @return a square matrix defaulting to a unit matrix
+#' @return nothing but it does add a pointed line to a plot
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#'   makeUnit(4)
-#'   surv <- exp(-0.2)
-#'   makeUnit(4,surv)
-#' }
-makeUnit <- function(N,diagvalue=1.0) {
-  N <-trunc(N)
-  UnitM <- matrix(0,nrow=N,ncol=N,dimnames=list(1:N,1:N))
-  diag(UnitM) <- diagvalue
-  return(UnitM)
-}  # end of makeUnit
+#' print("wait on example data")
+linept <- function(x,y,lwd=1,pch=16,...) {
+  lines(x,y,lwd=lwd,...)
+  points(x,y,pch=pch,...)
+}
+
+#' @title pickbound selects an optimum number of rows and cols for a plot
+#' 
+#' @description pickbound enables the automatic selection of a pre-determined
+#'     optimum combination of plot rows and columns to suit a number of plots
+#'     up to 30. So, given a number of plots from 1 to 30 this returns a numeric 
+#'     dimer containing the number of rows and columns needed for par statement
+#'
+#' @param n the number of plots to be included in a combined plot
+#'
+#' @return a vector of two with the number of rows and columns for a plot
+#' @export
+#'
+#' @examples
+#' pickbound(5)
+#' pickbound(8)
+pickbound <- function(n) {
+  bounds <- matrix(c(1,1,1,2,2,1,3,2,2,4,2,2,5,3,2,6,3,2,7,4,2,8,4,2,9,3,3,10,3,4,
+                     11,3,4,12,3,4,13,5,3,14,5,3,15,5,3,16,4,4,17,5,4,18,5,4,19,5,4,
+                     20,5,4,21,5,5,22,5,5,23,5,5,24,5,5,25,5,5,26,5,6,27,5,6,28,5,6,
+                     29,5,6,30,5,6),nrow=30,ncol=3,byrow=TRUE)
+  out <- c(bounds[n,2],bounds[n,3])
+  return(out)
+} # end of pickbound
+
+
 
 #' @title newplot simple floating window setup a plot
 #'
@@ -1567,98 +2159,6 @@ newplot <- function(width=6,height=3.6,newdev=TRUE) {
   par(mfrow=c(1,1),mai=c(0.45,0.45,0.05,0.05),oma=c(0.0,0,0.0,0.0))
   par(cex=0.85, mgp=c(1.35,0.35,0), font.axis=7,font=7,font.lab=7)
 } # end of new_plot
-
-#' @title outfit tidy print of output from optim, nlminb, or nlm
-#'
-#' @description outfit takes in the output list from either optim,
-#'     nlminb, or nlm and prints it more tidily to the console, In the
-#'     case of nlm it also prints the conclusion regarding the
-#'     solution. It might be more effective to implement an S3 method.
-#'
-#' @param inopt the list object output by nlm, nlminb, or optim
-#' @param backtran a logical default = TRUE If TRUE it assumes
-#'     that the parameters have been log-transformed for stability
-#'     and need back-transforming
-#' @param digits the number of digits to round the backtransformed 
-#'     parameters. defaults to 5.
-#' @param title character string used to label the output if desired,
-#'     default = empty character string
-#' @param parnames default="" which means the estimated parameters
-#'     will merely be numbered. If a vector of names is given 
-#'     then this will be used instead, at least, for nlm and optim.
-#'
-#' @return nothing but it does print the list to the console tidily
-#' @export
-#'
-#' @examples
-#'  x <- 1:10  # generate power function data from c(2,2) + random
-#'  y <- c(2.07,8.2,19.28,40.4,37.8,64.68,100.2,129.11,151.77,218.94)
-#'  alldat <- cbind(x=x,y=y)
-#'  pow <- function(pars,x) return(pars[1] * x ^ pars[2])
-#'  ssq <- function(pars,indat) {
-#'     return(sum((indat[,"y"] - pow(pars,indat[,"x"]))^2))
-#'  }  # fit a power curve using normal random errors
-#'  pars <- c(2,2)
-#'  best <- nlm(f=ssq,p=pars,typsize=magnitude(pars),indat=alldat)
-#'  outfit(best,backtran=FALSE) #a=1.3134, b=2.2029 ssq=571.5804
-outfit <- function(inopt,backtran=TRUE,digits=5,title="",
-                   parnames=""){
-  #  inopt=bestvB; backtran = FALSE; digits=5; title=""; parnames=""
-  nlmcode <- c("gradient close to 0, probably solution",
-               ">1 iterates in tolerance, probably solution",
-               "Either ~local min or steptol too small",
-               "iteration limit exceeded",
-               "stepmax exceeded ,5 times")
-  if (length(grep("value",names(inopt))) > 0) { # optim
-    cat("optim solution: ", title,"\n")
-    cat("minimum     : ",inopt$value,"\n")
-    cat("iterations  : ",inopt$counts," iterations, gradient\n")
-    cat("code        : ",inopt$convergence,"\n")
-    if (backtran) {
-      ans <- cbind(par=inopt$par,transpar=round(exp(inopt$par),digits))
-    } else {
-      ans <- t(inopt$par)
-    }
-    if ((length(parnames) > 1) & (length(parnames) == length(inopt$par))) {
-      rownames(ans) <- parnames
-    } else {
-      rownames(ans) <- 1:length(inopt$par)
-    }
-    print(ans)
-    cat("message     : ",inopt$message,"\n")
-  } # end of optim
-  if (length(grep("minimum",names(inopt))) > 0) {  # nlm - preferred
-    cat("nlm solution: ", title,"\n")
-    cat("minimum     : ",inopt$minimum,"\n")
-    cat("iterations  : ",inopt$iterations,"\n")
-    cat("code        : ",inopt$code,nlmcode[inopt$code],"\n")
-    if (backtran) {
-      ans <- cbind(par=inopt$estimate,gradient=inopt$gradient,
-                   transpar=round(exp(inopt$estimate),digits))
-    } else {
-      ans <- cbind(par=inopt$estimate,gradient=inopt$gradient)
-    }
-    if ((length(parnames) > 1) & 
-        (length(parnames) == length(inopt$estimate))) {
-      rownames(ans) <- parnames
-    } else {
-      rownames(ans) <- 1:length(inopt$estimate)
-    }
-    print(ans)
-  } # end of nlm
-  if (length(grep("objective",names(inopt))) > 0) {
-    cat("nlminb solution: ", title,"\n")   # nlminb seems to be deprecated
-    cat("par        : ",inopt$par,"\n")
-    cat("minimum    : ",inopt$objective,"\n")
-    cat("iterations : ",inopt$iterations,"\n")
-    cat("code       : ",inopt$evaluations," iterations, gradient\n")
-    cat("message    : ",inopt$message,"\n")
-  }
-  if (length(grep("hessian",names(inopt))) > 0) {
-    cat("hessian     : \n")
-    print(inopt$hessian)
-  }
-} # end of outfit
 
 
 #' @title parset alters the current base graphics par settings
@@ -1721,32 +2221,6 @@ parsyn <- function() {
   cat("par(mfrow=c(1,1),mai=c(0.45,0.45,0.05,0.05),oma=c(0.0,0,0.0,0.0)) \n")
   cat("par(cex=0.85, mgp=c(1.35,0.35,0), font.axis=7,font=7,font.lab=7)  \n")
 }
-
-#' @title pkgfuns names all functions within a package
-#'
-#' @description pgkfuns when given the name of a loaded library gives the 
-#'     names of all functions within that library sorted in alphebetical 
-#'     order.
-#'
-#' @param packname the name of the package as character
-#'
-#' @return a character vector containing the names of all functions in the 
-#'     named package
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#'   pkgfuns("graphics")
-#'   pkgfuns("rutilsMH")
-#' }
-pkgfuns <- function(packname) { # packname=pkgname
-  funcs <- names(.getNamespace(packname))
-  pick <- grep("__",funcs)
-  funcs <- funcs[-pick]
-  pick <- which(funcs == ".packageName")
-  funcs <- funcs[-pick]
-  return(sort(funcs))
-} # end of pgkfuns
 
 #' @title plot1 a simple way to plot an xy line plot
 #'
@@ -1922,254 +2396,6 @@ plotxyy <- function(x,y1,y2,xlab="",ylab1="",ylab2="",cex=0.85,fnt=7,
   grid(ny=0)
 } # end of plotxyy
 
-#' @title printV returns a vector cbinded to 1:length(invect)
-#'
-#' @description printV takes an input vector and generates another vector of
-#'     numbers 1:length(invect) which it cbinds to itself. This is primarily
-#'     useful when trying to print out a vector which can be clumsy to read 
-#'     when print across the screen. applying printV leads to a single 
-#'     vector being printed down the screen
-#'
-#' @param invect the input vector to be more easily visualized, this can be
-#'     numbers, characters, or logical. If logical the TRUE and FALSE are
-#'     converted to 1's and 0's
-#' @param label the column labels for vector, default is index and value
-#'
-#' @return a dataframe containing the vector 1:length(invect), and invect.
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' vec <- rnorm(10,mean=20,sd=2)
-#' printV(vec)
-#' vec <- letters
-#' printV(vec)
-#' vec <- c(TRUE,TRUE,TRUE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,TRUE,TRUE)
-#' printV(vec,label=c("index","logicstate"))
-#' }
-printV <- function(invect,label=c("value","index")) {
-  n <- length(invect)
-  outvect <- as.data.frame(cbind(invect,1:n))
-  colnames(outvect) <- label
-  return(outvect)
-} # end of print_V
-
-#' @title properties - used to check a data.frame before standardization
-#'
-#' @description properties - used to check a data.frame before
-#'     standardization. The maximum and minimum are constrained to four
-#'     decimal places. It allows for columns of NAs and for Posix 
-#'     columns.
-#' @param indat the data.frame containing the data fields to be used
-#'     in the subsequent standardization. It tabulates the number of
-#'     NAs and the number of unique values for each variable and finds
-#'     the minimum and maximum of the numeric variables
-#' @param dimout determines whether or noth the dimensions of the data.frame
-#'     are printed to the screen or not; defaults to FALSE
-#' @return a data.frame with the rows being each variable from the input
-#'     input data.frame and the columns being the number of NAs, the
-#'     number of unique values, and minimum and maximum (where possible).
-#' @export properties
-#' @examples
-#' \dontrun{
-#'  data(abdat)
-#'  properties(abdat$fish)
-#' }
-properties <- function(indat,dimout=FALSE) {  # indat=sps1; dimout=FALSE
-  dominmax <- function(x) {
-    if (length(which(x > 0)) == 0) return(c(NA,NA))
-    mini <- min(x,na.rm=TRUE)
-    maxi <- max(x,na.rm=TRUE)
-    return(c(mini,maxi))
-  }
-  if(dimout) print(dim(indat))
-  isna <- sapply(indat,function(x) sum(is.na(x)))
-  uniques <- sapply(indat,function(x) length(unique(x)))
-  columns <- length(indat)
-  clas <- character(columns)
-  for (i in 1:columns) {
-    clas[i] <- class(indat[,i])[1]
-  }
-  numbers <- c("integer","numeric")
-  pick <- which(clas %in% numbers)
-  minimum <- numeric(length(uniques))
-  maximum <- minimum
-  for (i in 1:length(pick)) {
-    minmax <- dominmax(indat[,pick[i]])
-    minimum[pick[i]] <- minmax[1]
-    maximum[pick[i]] <- minmax[2]
-  }
-  pick <- which((clas == "character") & (isna == 0))
-  if (length(pick) > 0) {
-    for (i in 1:length(pick)) {
-      pickna <- which(indat[,pick[i]] == "NA")
-      if (length(pickna) > 0) isna[pick[i]] <- length(pickna)
-    }
-  }  
-  index <- 1:length(isna)
-  props <- as.data.frame(cbind(index,isna,uniques,clas,round(minimum,4),
-                               round(maximum,4),t(indat[1,])))
-  colnames(props) <- c("Index","isNA","Unique","Class","Min",
-                       "Max","Example")
-  return(props)
-} # end of properties
-
-
-#' @title quants used in apply to estimate quantiles across a vector
-#'
-#' @description quants used in 'apply' to estimate quantiles across a vector
-#' @param invect vector of values
-#' @param probs the quantiles wanted in the outputs; default = 
-#'     c(0.025,0.05,0.5,0.95,0.975)
-#' @return a vector of the c(0.025,0.05,0.5,0.95,0.975) quantiles or
-#'     whatever is input to probs
-#' @export quants
-#' @examples
-#' \dontrun{
-#'  x <- runif(1000)
-#'  quants(x)
-#'  quants(x,probs=c(0.075,0.5,0.925))
-#' }
-quants <- function(invect,probs = c(0.025,0.05,0.5,0.95,0.975)) {
-  ans <- quantile(invect,probs =probs,na.rm=T)
-  return(ans)
-}
-
-#' @title removeEmpty removes empty strings from a vector of strings
-#'
-#' @description removeEmpty removes empty strings from a vector of strings.
-#'     Such spaces often created by spurious commas at the end of lines. It
-#'     also removes strings made up only of spaces and removes spaces from
-#'     inside of inidivdual chunks of text.
-#'
-#' @param invect vector of input strings, possibly containing empty strings
-#'
-#' @return a possibly NULL vector of strings
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' x <- c("1","","2","","   ","3"," ","4","","a string","end")
-#' x
-#' length(x)
-#' length(removeEmpty(x))
-#' removeEmpty(x)
-#' }
-removeEmpty <- function(invect) {
-  tmp <- gsub(" ","",invect)
-  tmp <- tmp[nchar(tmp) > 0]
-  return(tmp)
-}
-
-#' @title revsum generates a vector of the cumulative sum from n to 1 
-#'
-#' @description revsum generates a vector of the cumulative sum of an input
-#'     vector from n to 1 rather than from 1 - n, as in cumsum.
-#' 
-#' @param x an input vector
-#'
-#' @return a vector of cumulative values from n to 2
-#' @export
-#'
-#' @examples
-#' x <- c(1,2,3,4,5)/15
-#' print(round(cbind(x,cumsum(x),revsum(x)),3))
-revsum <- function(x) {
-  n <- length(x)
-  if (n < 2) warning("Input vector in revsum less than length 2.  \n")
-  ans <- numeric(n)
-  ans[n] <- x[n]
-  for (i in (n-1):1) ans[i] <- ans[i+1] + x[i] 
-  return(ans)
-} # end of revsum
-
-#' @title rmdcss generates some initial css style code for HTML Rmd files
-#' 
-#' @description rmdcss generates some initial css style code for HTML Rmd files
-#'     as well as a mathjax script that will generate equation numbers for any
-#'     display equations in the document. This prints the css style code and
-#'     the mathjax script to the console from where it should be pasted into the
-#'     Rmd file immediately following the YAML header. It now contains font 
-#'     sizes for the h1 heaqder and the .inline and .display math classes
-#'
-#' @return nothing but it prints css style code and a mathjax script to the 
-#'     console
-#' @export
-#'
-#' @examples
-#' rmdcss()
-rmdcss <- function() {
-  cat('<style type="text/css"> \n',
-      '  body, td { \n',
-      '  font-size: 16px; \n',
-      '  font-family: "Times New Roman", Times, serif; \n',
-      '} \n')
-  cat('code.r{ \n',
-      '  font-size: 15px; \n',
-      '} \n')
-  cat('pre {  \n',
-      'font-size: 8px  \n',
-      '}  \n')
-  cat('h1 {  \n',
-      '  font-size: 32px  \n',
-      '}  \n')
-  cat('.inline{font-size: 15px; } \n',
-      '.display{font-size: 18px;} \n',
-      '<','/style>  \n')
-  cat('\n\n')
-  cat('<script type="text/x-mathjax-config">  \n',
-      '  MathJax.Hub.Config({  \n',
-      '    TeX: {   \n',
-      '      equationNumbers: {   \n',
-      '        autoNumber: "all",  \n',
-      '        formatNumber: function (n) {return ',3.,'+n}  \n',
-      '      }  \n', 
-      '    }  \n',
-      '  });  \n',
-      '<','/script>  \n')
-} # end of rmdcss
-
-#' @title setpalette is a shortcut for altering the palette to R4
-#' 
-#' @description setpalette is a shortcut for changing the 
-#'     default color palette to the new R version 4.0.0 version
-#'     before it comes out. The new palette was described in a
-#'     blog post at developer.r-project.org and provides less 
-#'     garish and a more visible set of default colours that can
-#'     be called using the numbers 1 - 8. An important point is 
-#'     that this alters the default colours for all sessions
-#'     until a restart of R. Using something similar you can 
-#'     define your own preferred palettes should you wish to.     
-#'     
-#' @param x either "default", "R3", or "R4", with R4 as the 
-#'     default value. Use "default" or "R3" to revert back to the
-#'     standard R version 3. values.
-#'
-#' @return nothing but it does alter the base palette
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#'    setpalette("R3")
-#'    plot(1:8,rep(0.25,8),type="p",pch=16,cex=5,col=c(1:8))
-#'    setpalette("R4")
-#'    points(1:8,rep(0.3,8),pch=16,cex=5,col=c(1:8)) #toprow
-#' }
-setpalette <- function(x="R4") { # x="R4"
-  choice <- c("default","R3","R4")
-  if (x %in% choice) {
-    if ((x == "R3") | (x == "default")) {
-      palette("default")
-    }
-    if (x == "R4") {
-      palette(c("#000000", "#DF536B", "#61D04F", "#2297E6",
-                "#28E2E5", "#CD0BBC", "#EEC21F", "#9E9E9E"))
-    }
-  } else {
-    cat("Currently options are default, R3, or R4 \n")
-  }
-} # end of setpalette
-
 #' @title setplot provides an example plot with defaults for a standard plot
 #'
 #' @description Provides an example plot with defaults for a standard plot
@@ -2210,188 +2436,6 @@ setplot <- function() {
   cat('#graphics.off() \n')
 } # end of set_plot
 
-#' @title setuprmd sets up and Rmd file ready to generate an HTML file
-#' 
-#' @description setuprmd sets up a custom Rmd file for generating an HTML file,
-#'     which better suits my own preferences
-#'
-#' @param filen the full path filename for the final Rmd file. Ensure its 
-#'     filetype = .Rmd. The default = "", which write the custom text to the 
-#'     console.
-#'
-#' @return nothing but it does write a file to one's hard drive in the location
-#'    listed in filen
-#' @export
-#'
-#' @examples
-#' setuprmd(filen="")
-setuprmd <- function(filen="") {
-  cat('--- \n',
-      'title: "Title" \n',
-      'author: Malcolm Haddon \n',
-      'date: "`r Sys.time()`"  \n',
-      'output: \n',
-      '  html_document:   \n',
-      '    df_print: paged    \n',
-      '    fig_caption: yes \n',
-      '    fig_height: 5.5 \n',
-      '    fig_width: 6.5\n',
-      '    number_section: yes \n',
-      # '    toc: yes \n',
-      # '    toc_depth: 2 \n',
-      '---  \n',
-      sep = "", file=filen, append=FALSE)
-  cat('  \n',
-      '```{r setup, include=FALSE}  \n',
-      'knitr::opts_chunk$set(  \n',
-      '  echo = FALSE,  \n',
-      '  message = FALSE,  \n',
-      '  warning = FALSE)  \n\n',
-      'options(knitr.kable.NA = "", \n',
-      '        knitr.table.format = "pandoc")  \n',
-      '  \n\n',
-      sep = "", file=filen, append=TRUE)
-  cat('options("show.signif.stars"=FALSE,  \n',
-      '        "stringsAsFactors"=FALSE,   \n',
-      '        "max.print"=50000,          \n',
-      '        "width"=240)                \n',
-      '```  \n\n',
-      sep = "", file=filen, append=TRUE)
-  # cat('   \n',
-  #     '<style type="text/css">  \n',
-  #     '   body, td, h1, h2, h3, h4 {  \n',
-  #     '   font-size: 16px;   \n',
-  #     '   font-family: "Times New Roman" Times, serif; \n',
-  #     '}   \n',
-  #     '< /style>   \n\n\n',
-  #     sep = "", file=filen, append=TRUE)
-} # end of setuprmd
-
-
-#' @title splitDate - Generates a vector of date and time components
-#'
-#' @description splitDate - Generates a vector of date and time components,
-#'     perhaps for inclusion in filenames or other labels; helpful for
-#'     keeping different run outputs seperate and identifiable.
-#' @param dat - a system time from Sys.time() to be broken in components;
-#'     defaults to NA, whereupon the current time is used.
-#' @return a vector od characters relating to 'Year', 'Month', 'Day','Time',
-#'     and a DateTime, which is a combination of all of these suitable for
-#'     inclusion in a filename.
-#' @export
-#' @examples
-#' \dontrun{
-#' tmp <- splitDate()
-#' print(tmp)
-#' print(names(tmp))
-#' print(as.numeric(tmp[1:3]))
-#' print(tmp["DateTime"])
-#' }
-splitDate <- function(dat=NA) {
-  if(is.na(dat)) dat <- as.POSIXlt(Sys.time())
-  out <- unlist(dat)
-  tim <- paste(trunc(as.numeric(out[3])),trunc(as.numeric(out[2])),
-               "_",trunc(as.numeric(out[1]),1),sep="")
-  day <- as.character(trunc(as.numeric(out[4])))
-  month <- as.character(trunc(as.numeric(out[5])) + 1)
-  if (nchar(month) == 1) month <- paste(0,month,sep="")
-  year <- as.character(trunc(as.numeric(out[6])) - 100)
-  combined <- paste(year,month,day,"_",tim,sep="")
-  ans <- c(year,month,day,tim,combined)
-  names(ans) <- c("Year","Month","Day","Time","DateTime")
-  return(ans)
-} # end of split_Date
-
-#' @title str1 a simple replacement for str(x,max.level=1)
-#' 
-#' @description str1 an abbreviated replacement for str(x,max.level=1), which I 
-#'     put together because to often I make a typo when typing out the full
-#'     str syntax. Hence I find str1 helpful
-#'
-#' @param x the object whose structure is to be listed
-#'
-#' @return str(x,max.level=1)
-#' @export
-#'
-#' @examples
-#' x <- matrix(rnorm(25,mean=5,sd=1),nrow=5,ncol=5)
-#' str1(x)
-str1 <- function(x){
-  return(str(x,max.level=1))
-}
-
-#' @title str2 a simple replacement for str(x,max.level=2)
-#' 
-#' @description str2 an abbreviated replacement for str(x,max.level=2), which I 
-#'     put together because to often I make a typo when typing out the full
-#'     str syntax. For when str1 is not detailed enough.
-#'
-#' @param x the object whose structure is to be listed
-#'
-#' @return str(x,max.level=2)
-#' @export
-#'
-#' @examples
-#' x <- matrix(rnorm(25,mean=5,sd=1),nrow=5,ncol=5)
-#' str2(x)
-str2 <- function(x){
-  return(str(x,max.level=2))
-}
-
-#' @title tidynames can replace awkward data.frame names with better ones
-#'
-#' @description tidynames can replace awkward or overly long data.frame
-#'     column names with better ones than are easier to use. It also
-#'     permits one to maintain the same set of column names within an
-#'     analysis even when the source data.frame includes alterations.
-#'
-#' @param columns the vector of names that shoudl include the ones to be
-#'     altered
-#' @param replace the names to be changed, as a vector of character
-#'     strings
-#' @param repwith the replacement names as a vector of character strings
-#'
-#' @return a vector of new columns names
-#' @export
-#'
-#' @examples
-#'  print("wait")
-tidynames <- function(columns,replace,repwith) {
-  nreplace <- length(replace)
-  if (nreplace != length(repwith))
-    stop("Different number of names in replace and repwith \n")
-  for (i in 1:nreplace) {
-    pick <- grep(replace[i],columns)
-    #cat(i,pick,"\n")
-    if (pick[1] > 0) {
-      columns[pick[1]] <- repwith[i]
-    } else {
-      warning(paste0(replace[i]," not in the dataset"))
-    }
-  }
-  return(columns)
-} # end of tidynames
-
-#' @title toXL copies a data.frame or matrix to the clipboard
-#'
-#' @description toXL copies a data.frame or matrix to the clipboard
-#'    so one can then switch to Excel and just type <ctrl> + V to paste the
-#'    data in place
-#'
-#' @param x a vector or matrix
-#' @param output - a boolean determining whether to print the object to the
-#'    screen as well as the clipboard; defaults to FALSE
-#' @return Places the object 'x' into the clipboard ready for pasting
-#' @export toXL
-#' @examples
-#' datamatrix <- matrix(data=rnorm(100),nrow=10,ncol=10)
-#' colnames(datamatrix) <- paste0("A",1:10)
-#' rownames(datamatrix) <- paste0("B",1:10)
-#' toXL(datamatrix,output=TRUE)
-toXL <- function(x,output=FALSE) {
-  write.table(x,"clipboard",sep="\t")
-  if(output) print(x)
-}
 
 #' @title uphist a histogram with an upper limit on the x-axis
 #' 
@@ -2432,77 +2476,3 @@ uphist <- function(x,maxval=NA,...) {
   }
 } # end of uphist
 
-#' @title which.closest find the number closest to a given value
-#'
-#' @description which.closest finds either the number in a vector which is
-#'     closest to the input value or its index value
-#'
-#' @param x the value to lookup
-#' @param invect the vector in which to lookup the value x
-#' @param index should the closest value be returned or its index; 
-#'     default=TRUE
-#'
-#' @return by default it returns the index in the vector of the value 
-#'     closest to the input value
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' vals <- rnorm(100,mean=5,sd=2)
-#' pick <- which.closest(5.0,vals,index=TRUE)
-#' pick
-#' vals[pick]
-#' which.closest(5.0,vals,index=FALSE)
-#' }
-which.closest <- function(x,invect,index=T) {
-  pick <- which.min(abs(invect-x))
-  if (index) {
-    return(pick)
-  } else {
-    return(invect[pick])
-  }
-} # end of which_.closest
-
-#' @title wtedmean calculates the weighted mean of a set of values and weights
-#'
-#' @description wtedmean solves the problem of calculating a weighted mean
-#'     value from a set of values with different weights. Within the aMSE this
-#'     is common when trying to summarize across populations within an SAU or
-#'     summarize SAU within a zone by finding a mean value weighted by the
-#'     respective catch from each related population or SAU.
-#'
-#' @param x the values whose weighted mean is wanted
-#' @param wts the weights to use, often a set of catches
-#'
-#' @return a single real number
-#' @export
-#'
-#' @examples
-#' saucpue <- c(91.0,85.5,88.4,95.2)
-#' saucatch <- c(42.0,102.3,75.0,112.0)
-#' wtedmean(saucpue,saucatch)
-#' saucatch/sum(saucatch)  # the relative weights
-wtedmean <- function(x,wts) {
-  pwts <- wts/sum(wts,na.rm=TRUE)
-  ans <- sum((x * pwts),na.rm=TRUE)
-  return(ans)
-} # end of wtedmean
-
-#' @title '\%ni\%' identifies which element in x is NOT in y
-#'
-#' @param x a vector of elements which can be numeric or character
-#' @param y a vector of elements which can be numeric or character
-#'
-#' @export
-#' 
-#' @examples
-#' \dontrun{
-#'   x <- 1:10
-#'   y <- 6:18
-#'   x %ni% y
-#'   pick <- (x %ni% y)
-#'   x[pick]
-#' }
-`%ni%` <- function(x,y) {
-  !(x %in% y)
-}

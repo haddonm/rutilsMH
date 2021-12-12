@@ -7,7 +7,7 @@
 tidynames(columns, replace, repwith)
 }
 \arguments{
-\item{columns}{the vector of names that shoudl include the ones to be
+\item{columns}{the vector of names that should include the ones to be
 altered}
 
 \item{replace}{the names to be changed, as a vector of character
@@ -20,7 +20,7 @@ a vector of new columns names
 }
 \description{
 tidynames can replace awkward or overly long data.frame
-    column names with better ones than are easier to use. It also
+    column names with better ones that are easier to use. It also
     permits one to maintain the same set of column names within an
     analysis even when the source data.frame includes alterations.
 }

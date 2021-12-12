@@ -11,6 +11,8 @@ Contains a set of functions I use all the time when using R
 
 When conducting analyses using R there are functions I use all the time for plotting, within apply functions, and others. To simplify their use I have put  together this small package, which I can call whenever I use one of my other packages.
 
+* 0.1.21 2021-12-12 Reodered the functions internally into more coherent groups in case I sub-divide the package into smaller, more specific packages.
+
 * 0.1.20 2021-11-11 Includes getDBdir (get DropBox directory for my own use), and improved printV
 
 * 0.1.19 2021-06-20 Included identifyfuns and extractpathway to aid in package documentation.

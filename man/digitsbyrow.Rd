@@ -15,7 +15,7 @@ digitsbyrow(df, digits)
 a formatted data.frame or matrix depending on input
 }
 \description{
-digitsbyrow is a solution obtained from StackOverFlow, sugegsted
+digitsbyrow is a solution obtained from StackOverFlow, suggested
     by Tim Bainbridge in 11/12/19. knitr formats table columns as a whole,
     which can be a problem if one wants to mix integers with real numbers in
     the same columns. This first transposes the data.frame/matrix being
