@@ -1,7 +1,6 @@
 Package: rutilsMH
 Type: Package
-Title: Contains utility functions commonly used when writing R code. This
-    package is required by many of my other packages
+Title: DEPRECATED. USE codeutils AND hplot INSTEAD. Contains utility functions commonly used when writing R code. 
 Version: 0.1.21
 Date: 2021-12-12
 Author: <malcolm.haddon@gmail.com>
