@@ -1,4 +1,7 @@
-# rutilsMH
+# rutilsMH is DEPRECATED
+
+Use:  codeutils and hplot instead, the latter separates the plotting routines from the rest, as sometimes that is all one needs.
+
 
 To install from github it is most simple from inside RStudio using:
 
