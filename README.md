@@ -1,14 +1,9 @@
-# rutilsMH is DEPRECATED
+# rutilsMH is NOW DEPRECATED
 
 Use:  codeutils and hplot instead, the latter separates the plotting routines from the rest, as sometimes that is all one needs.
 
 
 To install from github it is most simple from inside RStudio using:
-
-if (!require(devtools)){install.packages("devtools")} 
-devtools::install_github("https://github.com/haddonm/rutilsMH")
-
-Though I still have to write a vignette
 
 Contains a set of functions I use all the time when using R
 
