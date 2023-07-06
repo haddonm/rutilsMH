@@ -2,6 +2,7 @@
 
 Use:  codeutils and hplot instead, the latter separates the plotting routines from the rest, as sometimes that is all one needs.
 
+Apologies for turning the codebase private to those who wondered where this went. codeutils and hplot are somewhat smaller and easier to maintain so do please transfer to those.
 
 To install from github it is most simple from inside RStudio using:
 
