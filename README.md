@@ -1,4 +1,4 @@
-# rutilsMH is NOW DEPRECATED
+# rutilsMH is NOW DEPRECATED use codeutils and hplot instead
 
 Use:  codeutils and hplot instead, the latter separates the plotting routines from the rest, as sometimes that is all one needs.
 
